@@ -3,15 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lydia Yang | Digital Archive v3</title>
+    <title>Lydia Yang | Archive V4 Elite</title>
     <style>
         :root {
-            --bg: #141415;
-            --frosted: rgba(220, 220, 215, 0.85); /* 磨砂塑料色 */
-            --paper: #fefefe;
-            /* 莫兰迪色标 */
-            --c1: #d88c8c; --c2: #8ca3d8; --c3: #8cd8a3; --c4: #d8c28c; --c5: #b18cd8;
-            --smooth: cubic-bezier(0.19, 1, 0.22, 1);
+            --bg: #0f0f10;
+            /* 极高透磨砂：白色比例更低，模糊度更高 */
+            --frosted: rgba(255, 255, 255, 0.15); 
+            --paper: #fdfdfb;
+            /* 半透明书签色 (Jelly Colors) */
+            --c1: rgba(216, 140, 140, 0.7); 
+            --c2: rgba(140, 163, 216, 0.7); 
+            --c3: rgba(140, 216, 163, 0.7); 
+            --c4: rgba(216, 194, 140, 0.7); 
+            --c5: rgba(177, 140, 216, 0.7);
+            --smooth: cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; cursor: none; }
@@ -20,93 +25,104 @@
             background-color: var(--bg);
             margin: 0; overflow: hidden;
             height: 100dvh; display: flex; justify-content: center; align-items: center;
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            /* 强制全局使用 Arial */
+            font-family: "Arial", "Helvetica", sans-serif;
         }
 
-        /* --- 1. 高级自定义鼠标 --- */
+        /* 自定义准心鼠标 */
         #cursor {
-            width: 50px; height: 50px;
-            border: 1px solid rgba(255,255,255,0.4);
+            width: 40px; height: 40px;
+            border: 1px solid rgba(255,255,255,0.3);
             border-radius: 50%;
             position: fixed; pointer-events: none; z-index: 9999;
             display: flex; align-items: center; justify-content: center;
-            mix-blend-mode: difference; /* 颜色取反，保证在黑白背景都清晰 */
-            transition: transform 0.1s ease-out;
+            mix-blend-mode: difference;
+            transition: transform 0.08s ease-out;
         }
-        #cursor::before { content: ""; width: 2px; height: 10px; background: white; position: absolute; }
-        #cursor::after { content: ""; width: 10px; height: 2px; background: white; position: absolute; }
+        #cursor::after { content: ""; width: 2px; height: 2px; background: white; border-radius: 50%; }
 
         .stage {
             position: relative;
-            width: 100%; max-width: 1000px; height: 90vh;
+            width: 100%; max-width: 950px; height: 85vh;
             display: flex; flex-direction: column;
         }
 
-        /* --- 2. 磨砂半透封面 --- */
+        /* --- 1. 高透磨砂封面 --- */
         .cover {
             position: absolute; inset: 0;
             background: var(--frosted);
-            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); /* 磨砂核心 */
-            z-index: 1000; border-radius: 12px;
+            /* 极高模糊实现塑料感 */
+            backdrop-filter: blur(30px) saturate(120%); 
+            -webkit-backdrop-filter: blur(30px) saturate(120%);
+            z-index: 1000; border-radius: 10px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            color: #1a1a1a; transition: all 1s var(--smooth);
-            box-shadow: 0 50px 100px rgba(0,0,0,0.4), inset 0 0 40px rgba(255,255,255,0.4);
-            /* 增加噪点纹理 */
-            background-image: url("https://www.transparenttextures.com/patterns/p6.png"); 
+            color: #ffffff; transition: all 1.2s var(--smooth);
+            box-shadow: 0 40px 100px rgba(0,0,0,0.5), inset 0 0 2px rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.1);
         }
-        .cover.hide { transform: translateY(-110%) rotateX(10deg); opacity: 0; pointer-events: none; }
+        .cover.hide { transform: translateY(-110%) rotateX(15deg); opacity: 0; pointer-events: none; }
         
-        .cover .mj-logo { font-size: 40px; font-weight: 900; letter-spacing: -1px; line-height: 0.9; }
-        .cover .mj-sub { font-size: 11px; font-weight: 700; margin-top: 15px; letter-spacing: 4px; opacity: 0.6; }
+        .cover .mj-logo { 
+            font-size: 52px; font-weight: 900; letter-spacing: -2px; 
+            text-shadow: 0 0 20px rgba(0,0,0,0.2);
+        }
+        .cover .mj-sub { font-size: 10px; letter-spacing: 5px; margin-top: 15px; opacity: 0.8; }
 
-        /* --- 3. 物理标签导航 --- */
+        /* --- 2. 半透明果冻书签 --- */
         .tab-nav {
-            position: absolute; top: 40px; left: 0; right: 0;
-            display: flex; justify-content: center; gap: 4px;
-            padding: 0 15px; z-index: 500;
+            position: absolute; top: 30px; left: 0; right: 0;
+            display: flex; justify-content: center; gap: 8px;
+            padding: 0 20px; z-index: 500;
         }
 
         .tab {
-            flex: 1; height: 40px;
-            border-radius: 6px 6px 0 0;
+            flex: 1; height: 42px;
+            border-radius: 6px;
             display: flex; align-items: center; justify-content: center;
             font-size: 10px; font-weight: 900; color: white;
             text-transform: uppercase; cursor: pointer;
-            transition: 0.3s var(--smooth); opacity: 0.8;
-            box-shadow: 0 -5px 15px rgba(0,0,0,0.2);
+            transition: 0.4s var(--smooth);
+            /* 书签半透效果 */
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
-        .tab:hover, .tab.active { opacity: 1; height: 55px; transform: translateY(-5px); }
+        .tab:hover, .tab.active { height: 55px; transform: translateY(-5px); opacity: 1; }
 
-        /* --- 4. 纸张内容 --- */
+        /* --- 3. 优雅内页 --- */
         .file-content {
-            position: absolute; top: 90px; left: 10px; right: 10px; bottom: 20px;
+            position: absolute; top: 85px; left: 10px; right: 10px; bottom: 20px;
             background: var(--paper); border-radius: 8px;
-            transform: translateY(120vh); transition: transform 0.8s var(--smooth);
-            z-index: 400; padding: 50px; color: #1a1a1a;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            transform: translateY(120vh); transition: transform 0.9s var(--smooth);
+            z-index: 400; padding: 60px; color: #1a1a1a;
+            box-shadow: 0 30px 70px rgba(0,0,0,0.3);
             background-image: url("https://www.transparenttextures.com/patterns/natural-paper.png");
         }
         .stage.active .file-content { transform: translateY(0); }
 
-        .doc-id { font-family: monospace; font-size: 10px; color: #888; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 30px; }
-        .doc-title { font-size: 42px; font-weight: 900; margin: 0; letter-spacing: -2px; line-height: 1; }
-        .doc-text { font-size: 16px; line-height: 1.7; margin-top: 30px; max-width: 480px; }
-
-        .back-trigger {
-            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
-            font-size: 9px; font-weight: bold; color: #ccc; cursor: pointer;
+        .doc-id { font-family: "Courier New", monospace; font-size: 11px; color: #999; margin-bottom: 40px; letter-spacing: 1px; }
+        .doc-title { font-size: 56px; font-weight: 900; margin: 0; letter-spacing: -3px; line-height: 0.85; }
+        
+        /* 引入优雅的斜体/花体感 */
+        .doc-text { 
+            font-size: 19px; line-height: 1.6; margin-top: 40px; max-width: 500px;
+            font-style: italic; font-family: "Georgia", serif; color: #333; 
         }
 
-        /* --- 5. 竖屏 (Mobile) 深度优化 --- */
+        .return-btn {
+            position: absolute; top: 25px; left: 50%; transform: translateX(-50%);
+            font-size: 9px; letter-spacing: 2px; color: #bbb; cursor: pointer;
+            transition: 0.3s;
+        }
+        .return-btn:hover { color: #666; }
+
+        /* --- 4. 竖屏 (Mobile) 完美适配 --- */
         @media (max-width: 600px) {
-            .tab-nav { 
-                display: grid; grid-template-columns: repeat(3, 1fr); 
-                top: 20px; gap: 8px;
-            }
-            .tab { border-radius: 6px; height: 35px; }
-            .file-content { padding: 30px; top: 120px; }
-            .doc-title { font-size: 32px; }
-            #cursor { display: none; } /* 移动端隐藏自定义鼠标 */
+            .tab-nav { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+            .tab { height: 36px; font-size: 9px; }
+            .file-content { padding: 35px; top: 130px; }
+            .doc-title { font-size: 38px; }
+            #cursor { display: none; }
         }
     </style>
 </head>
@@ -118,8 +134,8 @@
     
     <div class="cover" id="cover" onclick="openArchive()">
         <div class="mj-logo">LYDIA YANG</div>
-        <div class="mj-sub">CONTENT STRATEGIST</div>
-        <div style="position:absolute; bottom:40px; font-size:9px; opacity:0.4; letter-spacing:2px;">[ CLICK TO OPEN FILE ]</div>
+        <div class="mj-sub">PROJECT_FILE_2026</div>
+        <div style="position:absolute; bottom:50px; font-size:9px; letter-spacing:3px; opacity:0.6;">[ TAP_TO_DECRYPT ]</div>
     </div>
 
     <nav class="tab-nav">
@@ -127,18 +143,19 @@
         <div class="tab" id="t2" style="background:var(--c2)" onclick="loadFile(2)">Strategy</div>
         <div class="tab" id="t3" style="background:var(--c3)" onclick="loadFile(3)">Distro</div>
         <div class="tab" id="t4" style="background:var(--c4)" onclick="loadFile(4)">Notes</div>
-        <div class="tab" id="t5" style="background:var(--c5)" onclick="loadFile(5)">About</div>
+        <div class="tab" id="t5" style="background:var(--c5)" onclick="loadFile(5)">Profile</div>
     </nav>
 
     <div class="file-content">
-        <div class="back-trigger" onclick="closeArchive()">CLOSE / RETURN</div>
-        <div class="doc-id">FILE_REF: <span id="f-ref">MJ-000</span></div>
-        <h1 class="doc-title" id="f-title">SELECT FILE</h1>
-        <p class="doc-text" id="f-desc">请点击上方标签以提取档案信息内容。</p>
+        <div class="return-btn" onclick="closeArchive()">CLOSE_AND_SEAL_FILE</div>
+        <div class="doc-id">MJ_ARCHIVE // REF_<span id="f-ref">000</span></div>
+        <h1 class="doc-title" id="f-title">TITLE</h1>
+        <p class="doc-text" id="f-desc">Description goes here...</p>
         
-        <div id="f-about" style="display:none; margin-top:30px;">
-            <div style="width:140px; background:white; padding:10px; box-shadow:0 10px 30px rgba(0,0,0,0.1); transform:rotate(-2deg); border:1px solid #ddd;">
-                <img src="me.jpg" style="width:100%;" alt="Lydia">
+        <div id="f-about" style="display:none; margin-top:40px;">
+            <div style="width:160px; background:white; padding:12px 12px 45px 12px; box-shadow:0 15px 40px rgba(0,0,0,0.1); transform:rotate(-3deg); border:1px solid #eee;">
+                <img src="me.jpg" style="width:100%; display:block;" alt="Lydia">
+                <p style="font-family:Arial; font-size:9px; font-style:normal; margin-top:10px; text-align:center; color:#999;">SUBJECT_01: LYDIA</p>
             </div>
         </div>
     </div>
@@ -146,18 +163,18 @@
 </div>
 
 <script>
-    // 鼠标跟随效果
+    // 鼠标平滑跟随
     const cursor = document.getElementById('cursor');
     document.addEventListener('mousemove', (e) => {
-        cursor.style.transform = `translate(${e.clientX - 25}px, ${e.clientY - 25}px)`;
+        cursor.style.transform = `translate(${e.clientX - 20}px, ${e.clientY - 20}px)`;
     });
 
     const archive = {
-        1: { title: "Visual<br>Language", ref: "CR-808", desc: "构建具有工业精密感的内容视觉体系。我们强调留白、网格与极致的文字排版逻辑。" },
-        2: { title: "Narrative<br>Logic", ref: "ST-412", desc: "策略是内容背后的隐形框架。通过解构媒介规律，为品牌定制具有穿透力的叙事方案。" },
-        3: { title: "Global<br>Distro", ref: "DI-105", desc: "在算法时代重塑分发协议。让精准的内容通过最优路径抵达目标心智。" },
-        4: { title: "Draft<br>Notes", ref: "NO-003", desc: "关于未来交互趋势、物理拟物化设计以及数字化情感价值的碎碎念。" },
-        5: { title: "Subject:<br>Lydia Yang", ref: "ID-999", desc: "Lydia 是一位追求物理触感与数字逻辑完美统一的内容策略工程师。她热衷于将复杂信息转化为极简且深刻的视觉档案。" }
+        1: { title: "Visual<br>Poetry", ref: "CR-77", desc: "Digital aesthetics meet industrial precision. A collection of visual narratives crafted with intentional grid systems and refined typography." },
+        2: { title: "Logical<br>Flow", ref: "ST-88", desc: "The silent architecture behind the screen. Analyzing user behavior to construct seamless strategic frameworks." },
+        3: { title: "Signal<br>Path", ref: "DI-99", desc: "Navigating the noise of modern algorithms to ensure the core message resonates with the right audience at the perfect frequency." },
+        4: { title: "Raw<br>Drafts", ref: "NO-12", desc: "Unfiltered observations on the intersection of human emotion and physical-digital skeuomorphism." },
+        5: { title: "About<br>Lydia Yang", ref: "ID-01", desc: "A content strategist obsessed with the tactile feedback of the analog world and the boundless efficiency of the digital realm. Always seeking the 'perfect blur'." }
     };
 
     function openArchive() {
