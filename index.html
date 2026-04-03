@@ -2,173 +2,225 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lydia Yang | Archive System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lydia Yang | Digital Archive</title>
     <style>
         :root {
-            --bg: #1a1a1b; /* 视频中的深色背景 */
-            --folder-tan: #e4e4de; /* 封面磨砂色 */
-            --paper: #fdfdfd;
-            /* 视频中的彩色标签系统 */
-            --c-red: #d9534f; --c-blue: #4a90e2; --c-green: #5cb85c; --c-yellow: #f0ad4e; --c-purple: #8e44ad;
-            --bezier: cubic-bezier(0.23, 1, 0.32, 1); /* Apple 标准丝滑曲线 */
+            --bg: #0d0d0f; 
+            --folder-tan: #e2e2da;
+            --paper: #f9f9f7;
+            /* 视频原版色卡 */
+            --c1: #c94b4b; --c2: #4b7bc9; --c3: #4bc97b; --c4: #c99e4b; --c5: #8e4bc9;
+            --spring: cubic-bezier(0.4, 0, 0.2, 1.5); /* 带有回弹感的曲线 */
+            --smooth: cubic-bezier(0.23, 1, 0.32, 1);
         }
+
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
 
         body {
             background-color: var(--bg);
-            margin: 0; display: flex; justify-content: center; align-items: center;
-            height: 100vh; font-family: "Helvetica Neue", Helvetica, sans-serif;
-            overflow: hidden; color: white;
+            margin: 0; color: white;
+            font-family: "SF Pro Display", -apple-system, sans-serif;
+            overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
+            height: 100dvh;
         }
 
-        /* 档案系统主容器 */
-        .archive-system {
+        /* 主容器 */
+        .stage {
             position: relative;
-            width: 90%; max-width: 1000px; height: 650px;
-            perspective: 2000px;
+            width: 100%; max-width: 1100px; height: 100%;
+            display: flex; flex-direction: column;
+            padding: 20px;
         }
 
-        /* --- 封面部分 --- */
-        .folder-cover {
-            position: absolute; inset: 0;
+        /* --- 1. 封面 (3D拟物) --- */
+        .cover-overlay {
+            position: absolute; inset: 20px;
             background: var(--folder-tan);
-            border-radius: 4px 20px 20px 4px;
-            z-index: 100;
+            z-index: 1000;
+            border-radius: 12px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            color: #2a2a2a; transition: all 1s var(--bezier);
-            transform-origin: left;
-            box-shadow: 20px 20px 60px rgba(0,0,0,0.5);
+            color: #1a1a1a;
+            transition: transform 1s var(--smooth), opacity 0.6s;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.2);
         }
-        .folder-cover.open {
-            transform: rotateY(-115deg);
+        .cover-overlay.hide {
+            transform: translateZ(500px) translateY(-100%) rotateX(20deg);
             opacity: 0; pointer-events: none;
         }
-        .cover-title { font-size: 32px; font-weight: 900; letter-spacing: 4px; }
-        .cover-sub { font-size: 14px; font-weight: 700; opacity: 0.6; margin-top: 10px; }
+        .cover-content h1 { font-size: clamp(32px, 8vw, 56px); letter-spacing: 6px; margin: 0; font-weight: 900; text-align: center; }
+        .cover-content p { font-family: monospace; opacity: 0.6; text-align: center; margin-top: 20px; }
 
-        /* --- 视频同款彩色导航区 --- */
-        .nav-grid {
-            position: absolute; top: 80px; left: 0; width: 100%;
-            display: grid; grid-template-columns: repeat(4, 1fr);
-            gap: 10px; padding: 20px; box-sizing: border-box;
-            transition: transform 0.8s var(--bezier);
-            z-index: 50;
+        /* --- 2. 视频同款彩色网格 (响应式) --- */
+        .grid-nav {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-top: 60px;
+            transition: transform 0.8s var(--smooth), opacity 0.5s;
+            z-index: 100;
         }
-        /* 当内容打开时，导航整体上移并缩小 */
-        .archive-system.content-open .nav-grid {
-            transform: translateY(-120px) scale(0.95);
+        .stage.active .grid-nav {
+            transform: translateY(-80px) scale(0.92);
+            opacity: 0.6;
         }
 
-        .nav-item {
-            height: 60px; border-radius: 4px;
+        .nav-card {
+            height: 70px;
+            border-radius: 6px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 12px; font-weight: 800; cursor: pointer;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            font-weight: 800; font-size: 13px;
             text-transform: uppercase; letter-spacing: 1px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            transition: transform 0.3s var(--spring);
         }
-        .nav-item:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
+        .nav-card:active { transform: scale(0.95); }
 
-        /* --- 内容纸张区 --- */
-        .content-viewer {
-            position: absolute; top: 180px; left: 20px; right: 20px; bottom: 20px;
-            background: var(--paper); border-radius: 8px;
-            color: #1a1a1a; padding: 60px; box-sizing: border-box;
-            transform: translateY(100px); opacity: 0;
-            transition: all 0.8s var(--bezier);
-            background-image: url('https://www.transparenttextures.com/patterns/natural-paper.png');
-            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+        /* --- 3. 文件抽屉 (内容区) --- */
+        .file-drawer {
+            position: absolute;
+            bottom: -80%; left: 20px; right: 20px; height: 75%;
+            background: var(--paper);
+            border-radius: 12px 12px 0 0;
+            transition: transform 0.8s var(--spring);
+            padding: 40px;
+            color: #1a1a1a;
+            box-shadow: 0 -20px 60px rgba(0,0,0,0.5);
+            z-index: 200;
+            overflow-y: auto;
         }
-        .archive-system.content-open .content-viewer {
-            transform: translateY(0); opacity: 1;
+        .stage.active .file-drawer {
+            transform: translateY(-100%); /* 弹起动画 */
         }
 
-        /* 内容细节 */
-        .file-header { font-family: monospace; font-size: 12px; color: #999; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 30px; }
-        .file-body h2 { font-size: 42px; margin: 0; letter-spacing: -2px; }
-        .file-body p { line-height: 1.8; opacity: 0.8; max-width: 500px; }
-        
-        .id-clip {
-            position: absolute; top: 60px; right: 60px; width: 140px;
-            background: white; padding: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            transform: rotate(3deg); border: 1px solid #ddd;
+        .file-header {
+            font-family: monospace; font-size: 11px;
+            color: #888; border-bottom: 1px solid #ddd;
+            padding-bottom: 10px; margin-bottom: 30px;
+            display: flex; justify-content: space-between;
         }
-        .id-clip img { width: 100%; grayscale: 0; }
 
-        /* 返回按钮 */
-        .back-btn {
-            position: absolute; top: 20px; left: 20px; color: white;
-            font-size: 12px; cursor: pointer; opacity: 0; transition: 0.5s;
+        .file-body h2 { font-size: clamp(28px, 6vw, 42px); margin: 0; line-height: 1; }
+        .file-body .meta-tags { margin: 20px 0; display: flex; gap: 10px; }
+        .tag { padding: 4px 10px; border: 1px solid #000; font-size: 10px; font-weight: bold; border-radius: 100px; }
+        .file-body p { line-height: 1.7; opacity: 0.8; font-size: 16px; max-width: 600px; }
+
+        /* --- 关于照片 (ID卡) --- */
+        .id-polaroid {
+            width: 100%; max-width: 200px;
+            background: white; padding: 10px 10px 30px 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transform: rotate(2deg);
+            margin-top: 30px;
+            border: 1px solid #eee;
         }
-        .archive-system.content-open .back-btn { opacity: 0.5; }
-        .back-btn:hover { opacity: 1; }
+        .id-polaroid img { width: 100%; display: block; }
 
+        /* 顶部导航辅助 */
+        .top-bar {
+            position: absolute; top: 20px; left: 20px; right: 20px;
+            display: flex; justify-content: space-between;
+            font-size: 12px; font-weight: bold; opacity: 0;
+            transition: opacity 1s;
+        }
+        .stage.active .top-bar { opacity: 0.4; }
+
+        .close-btn {
+            position: absolute; top: 15px; right: 20px;
+            width: 30px; height: 30px; background: #eee;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: bold; cursor: pointer;
+        }
+
+        /* 移动端适配调整 */
+        @media (max-width: 600px) {
+            .grid-nav { grid-template-columns: repeat(2, 1fr); margin-top: 100px; }
+            .file-drawer { padding: 25px; height: 80%; }
+            .file-body h2 { font-size: 32px; }
+        }
     </style>
 </head>
 <body>
 
-<div class="archive-system" id="sys">
+<div class="stage" id="stage">
     
-    <div class="back-btn" onclick="closeFile()">← BACK TO INDEX</div>
-
-    <div class="folder-cover" id="cover" onclick="openFolder()">
-        <div class="cover-title">LYDIA YANG</div>
-        <div class="cover-sub">CONTENT STRATEGIST / PROJECT FILE</div>
-        <div style="position:absolute; bottom:40px; font-size:10px; opacity:0.4;">© 2026 CLASSIFIED ARCHIVE</div>
+    <div class="top-bar">
+        <span>LYDIA_SYSTEM_V3.0</span>
+        <span>INDEX / RECOVERED FILES</span>
     </div>
 
-    <div class="nav-grid">
-        <div class="nav-item" style="background:var(--c-red)" onclick="openFile('CREATIVE')">Creative</div>
-        <div class="nav-item" style="background:var(--c-blue)" onclick="openFile('STRATEGY')">Strategy</div>
-        <div class="nav-item" style="background:var(--c-green)" onclick="openFile('DISTRO')">Distro</div>
-        <div class="nav-item" style="background:var(--c-purple)" onclick="openFile('ABOUT')">About</div>
-    </div>
-
-    <div class="content-viewer" id="viewer">
-        <div class="file-header">DOCUMENT_REF: <span id="ref-id">NULL</span></div>
-        <div class="file-body">
-            <h2 id="file-title">Section Title</h2>
-            <p id="file-desc">内容加载中...</p>
+    <div class="cover-overlay" id="cover" onclick="unlock()">
+        <div class="cover-content">
+            <h1>LYDIA YANG</h1>
+            <p>[ CLICK TO ACCESS ARCHIVE ]</p>
         </div>
-        
-        <div class="id-clip" id="id-card" style="display:none;">
-            <img src="me.jpg" alt="Lydia">
-            <div style="font-size:9px; font-family:monospace; margin-top:5px;">SUBJECT: LYDIA YANG</div>
+    </div>
+
+    <nav class="grid-nav">
+        <div class="nav-card" style="background:var(--c1)" onclick="openFile('creative')">Creation</div>
+        <div class="nav-card" style="background:var(--c2)" onclick="openFile('strategy')">Strategy</div>
+        <div class="nav-card" style="background:var(--c3)" onclick="openFile('media')">Media</div>
+        <div class="nav-card" style="background:var(--c4)" onclick="openFile('archive')">Dossier</div>
+        <div class="nav-card" style="background:var(--c5)" onclick="openFile('about')">Profile</div>
+    </nav>
+
+    <div class="file-drawer" id="drawer">
+        <div class="close-btn" onclick="closeFile()">×</div>
+        <div class="file-header">
+            <span id="f-id">REF: 000-000</span>
+            <span>DATE: 04/04/2026</span>
+        </div>
+        <div class="file-body">
+            <div class="meta-tags">
+                <div class="tag">CLASSIFIED</div>
+                <div class="tag" id="f-tag">INTERNAL</div>
+            </div>
+            <h2 id="f-title">TITLE</h2>
+            <p id="f-content">CONTENT</p>
+            
+            <div id="f-extra" style="display:none;">
+                <div class="id-polaroid">
+                    <img src="me.jpg" alt="Lydia">
+                    <p style="font-size:10px; color:#999; margin-top:10px; text-align:center;">SUBJECT: YANG_L</p>
+                </div>
+            </div>
         </div>
     </div>
 
 </div>
 
 <script>
-    const data = {
-        'CREATIVE': { title: 'Visual<br>Production', desc: '基于工业美学的内容生产逻辑。我们关注每一个像素的叙事能力，确保视觉语言与品牌战略高度对齐。', ref: 'CR-001' },
-        'STRATEGY': { title: 'Narrative<br>Architecture', desc: '逻辑是创意的骨架。通过深度调研与竞品解构，为品牌量身定制具有攻击性的叙事策略。', ref: 'ST-042' },
-        'DISTRO': { title: 'Media<br>Amplification', desc: '算法时代的精准打击。利用多渠道分发矩阵，确保内容在对的时间出现在对的人面前。', ref: 'DI-009' },
-        'ABOUT': { title: 'Lydia<br>Yang', desc: 'Lydia 是一位专注于内容策略与数字化叙事的工程师。她喜欢在冷峻的工业质感中寻找人类情感的共鸣点。', ref: 'ID-777' }
+    const archiveData = {
+        creative: { title: "Visual<br>Displacement", tag: "CREATIVE", ref: "CD-992", content: "基于非线性叙事的内容产出。我们通过视觉位移与色彩解构，重塑品牌在数字空间的交互体验。" },
+        strategy: { title: "Logic<br>Architecture", tag: "STRATEGY", ref: "ST-104", content: "策略是档案的骨架。深挖数据背后的行为动机，构建具有防御性的叙事逻辑矩阵。" },
+        media: { title: "Signal<br>Amplifier", tag: "DISTRIBUTION", ref: "DI-058", content: "在噪声中校准频率。利用多维分发协议，确保核心信息在算法丛林中保持高精度送达。" },
+        archive: { title: "Fragmented<br>Records", tag: "MISC", ref: "AR-773", content: "一些未被分类的创意碎片、实验性笔记以及对未来数字伦理的观察记录。" },
+        about: { title: "Lydia<br>Yang", tag: "IDENTITY", ref: "ID-001", content: "Lydia Yang 是一位深耕于内容策略与交互工程的跨界者。她热衷于将物理世界的质感带入冰冷的数字界面。" }
     };
 
-    function openFolder() {
-        document.getElementById('cover').classList.add('open');
+    function unlock() {
+        document.getElementById('cover').classList.add('hide');
     }
 
-    function openFile(type) {
-        const sys = document.getElementById('sys');
-        const card = document.getElementById('id-card');
+    function openFile(key) {
+        const data = archiveData[key];
+        document.getElementById('f-title').innerHTML = data.title;
+        document.getElementById('f-tag').innerText = data.tag;
+        document.getElementById('f-id').innerText = "REF: " + data.ref;
+        document.getElementById('f-content').innerText = data.content;
         
-        // 1. 触发整体位移动效
-        sys.classList.add('content-open');
+        // 特殊处理About页的照片显示
+        document.getElementById('f-extra').style.display = (key === 'about') ? 'block' : 'none';
         
-        // 2. 填充内容
-        document.getElementById('ref-id').innerText = data[type].ref;
-        document.getElementById('file-title').innerHTML = data[type].title;
-        document.getElementById('file-desc').innerText = data[type].desc;
-        
-        // 3. 特殊处理About页的照片
-        card.style.display = (type === 'ABOUT') ? 'block' : 'none';
+        document.getElementById('stage').classList.add('active');
     }
 
     function closeFile() {
-        document.getElementById('sys').classList.remove('content-open');
+        document.getElementById('stage').classList.remove('active');
     }
 </script>
 
