@@ -3,120 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LYDIA YANG — ARCHIVE 2026</title>
+    <title>LYDIA YANG // SYSTEM 2026</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #000000;
-            --white: #ffffff;
+            --bg: #050505;
+            --paper: #f7f7f7;
+            --accent: #ffffff;
             --glass: rgba(255, 255, 255, 0.02);
-            --border: rgba(255, 255, 255, 0.08);
-            --paper: #fcfcfc;
-            /* 字体：优先使用苹果系统字体，无果则降级 */
-            --font-main: "SF Pro Display", "-apple-system", "Helvetica Neue", sans-serif;
+            --line: rgba(255, 255, 255, 0.1);
+            --bezier: cubic-bezier(0.8, 0, 0.1, 1);
         }
 
         * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; cursor: none; }
-        body { background-color: var(--bg); margin: 0; overflow: hidden; height: 100dvh; font-family: var(--font-main); color: var(--white); -webkit-font-smoothing: antialiased; }
+        body { background-color: var(--bg); margin: 0; overflow: hidden; height: 100dvh; font-family: 'Inter', sans-serif; color: white; }
 
-        /* --- 1. 极致准心鼠标 --- */
+        /* --- 极致锋利准心 --- */
         #cursor {
             width: 30px; height: 30px; position: fixed; pointer-events: none; z-index: 9999;
-            mix-blend-mode: difference; transition: transform 0.1s ease-out;
-            display: flex; align-items: center; justify-content: center;
+            mix-blend-mode: difference; display: flex; align-items: center; justify-content: center;
         }
-        #cursor::before { content: ""; position: absolute; width: 100%; height: 1px; background: white; opacity: 0.5; }
-        #cursor::after { content: ""; position: absolute; width: 1px; height: 100%; background: white; opacity: 0.5; }
+        #cursor::before { content: ""; position: absolute; width: 100%; height: 0.5px; background: white; }
+        #cursor::after { content: ""; position: absolute; width: 0.5px; height: 100%; background: white; }
 
-        /* --- 2. 交互逻辑层 --- */
-        .click-area { position: fixed; top: 0; bottom: 0; z-index: 5000; }
-        .area-left { left: 0; width: 35%; }
-        .area-right { right: 0; width: 65%; }
+        .click-area { position: fixed; top: 0; bottom: 0; z-index: 5000; width: 50%; }
+        .next { right: 0; } .prev { left: 0; }
 
-        .container { position: relative; width: 100%; height: 100dvh; display: flex; align-items: center; justify-content: center; perspective: 2000px; }
+        /* --- 主容器 --- */
+        .stage { position: relative; width: 100%; height: 100dvh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
 
-        /* --- 3. 封面：高透冷淡雾面 --- */
+        /* --- 1. 磨砂封面 (液态玻璃感) --- */
         .cover {
-            position: absolute; inset: 0; z-index: 1000;
+            position: absolute; width: 90%; height: 85vh; z-index: 1000;
             background: var(--glass);
-            backdrop-filter: blur(80px) saturate(100%);
-            -webkit-backdrop-filter: blur(80px);
+            backdrop-filter: blur(100px) saturate(150%);
+            -webkit-backdrop-filter: blur(100px) saturate(150%);
+            border: 0.5px solid var(--line);
+            border-radius: 2px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: all 1.4s cubic-bezier(0.16, 1, 0.3, 1);
-            border: 1px solid var(--border);
+            transition: all 1.2s var(--bezier);
+            box-shadow: inset 0 0 100px rgba(255,255,255,0.02);
         }
-        .cover.hide { transform: scale(1.05); opacity: 0; pointer-events: none; }
+        .cover.hide { transform: translateX(-120%) skewX(-5deg); opacity: 0; pointer-events: none; }
 
         .cover-title {
-            font-size: clamp(60px, 14vw, 130px); font-weight: 800; letter-spacing: -0.06em;
-            line-height: 0.8; margin: 0; text-align: center; color: #fff;
+            font-size: clamp(50px, 15vw, 160px); font-weight: 900; letter-spacing: -0.07em;
+            line-height: 0.8; margin: 0; filter: drop-shadow(0 0 20px rgba(0,0,0,0.5));
         }
-        .cover-sub { margin-top: 40px; font-size: 10px; letter-spacing: 0.5em; opacity: 0.3; font-weight: 400; text-transform: uppercase; }
+        .cover-tag { margin-top: 50px; font-size: 10px; letter-spacing: 0.8em; opacity: 0.4; text-transform: uppercase; }
 
-        /* --- 4. 侧边索引：极简文字 --- */
-        .nav {
-            position: absolute; right: 50px; top: 50%; transform: translateY(-50%);
-            display: flex; flex-direction: column; gap: 40px; z-index: 500;
+        /* --- 2. 锋利导航 (Apple/MJ Style) --- */
+        .nav-system {
+            position: absolute; right: 5%; top: 50%; transform: translateY(-50%);
+            z-index: 600; display: flex; flex-direction: column; gap: 40px;
         }
-        .nav-item {
-            font-size: 9px; letter-spacing: 0.2em; color: var(--white); opacity: 0.15;
-            writing-mode: vertical-rl; text-transform: uppercase; transition: 0.4s;
-            padding-right: 12px; border-right: 1px solid transparent;
+        .nav-btn {
+            display: flex; align-items: center; gap: 15px; opacity: 0.15; transition: 0.5s var(--bezier);
         }
-        .nav-item.active { opacity: 1; border-right: 1px solid white; }
+        .nav-btn span { font-size: 9px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; }
+        .nav-btn .line { width: 0px; height: 1px; background: white; transition: 0.5s var(--bezier); }
+        .nav-btn.active { opacity: 1; }
+        .nav-btn.active .line { width: 40px; }
 
-        /* --- 5. 核心纸张 --- */
-        .page {
-            position: absolute; width: 88%; max-width: 960px; height: 78vh;
-            background: var(--paper); border-radius: 4px;
-            padding: 100px; color: #111; z-index: 100;
-            box-shadow: 0 50px 120px rgba(0,0,0,0.6);
-            transform: translateY(110vh); transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
-            display: flex; flex-direction: column;
+        /* --- 3. 内部纸张 (堆叠感) --- */
+        .content-layer {
+            position: absolute; width: 85%; height: 80vh;
+            background: var(--paper); z-index: 100;
+            transform: translateY(110vh); transition: 1s var(--bezier);
+            padding: 80px; color: #000;
+            display: flex; flex-direction: column; justify-content: space-between;
         }
-        .container.active .page { transform: translateY(0); }
+        .stage.active .content-layer { transform: translateY(0); }
 
-        .page-meta { font-size: 10px; letter-spacing: 0.3em; opacity: 0.3; text-transform: uppercase; margin-bottom: 20px; }
-        .page-title { font-size: clamp(36px, 6vw, 72px); font-weight: 700; letter-spacing: -0.04em; margin: 0; line-height: 0.95; }
-        .page-desc { font-size: 19px; line-height: 1.5; max-width: 520px; color: #333; margin-top: 40px; font-weight: 400; }
+        .page-index { font-size: 10px; font-weight: 900; letter-spacing: 0.3em; opacity: 0.2; }
+        .page-title { font-size: clamp(30px, 6vw, 80px); font-weight: 900; letter-spacing: -0.04em; margin: 20px 0; line-height: 0.9; }
+        .page-desc { font-size: 18px; line-height: 1.4; max-width: 480px; font-weight: 400; color: #222; }
 
-        /* --- 6. 宝丽来 + 金属回形针 --- */
-        .polaroid-box {
-            position: absolute; bottom: 80px; right: 100px;
-            width: 220px; background: #fff; padding: 14px 14px 45px 14px;
-            box-shadow: 10px 20px 50px rgba(0,0,0,0.1);
-            transform: rotate(3deg); transition: 0.6s var(--bezier);
-            border: 1px solid #efefef;
+        /* --- 4. 宝丽来 + 回形针 (侧夹) --- */
+        .polaroid-frame {
+            position: absolute; bottom: 80px; right: 80px;
+            width: 240px; background: white; padding: 15px 15px 50px 15px;
+            box-shadow: 20px 30px 60px rgba(0,0,0,0.15); transform: rotate(2deg);
         }
-        .polaroid-box img { width: 100%; display: block; }
+        .polaroid-frame img { width: 100%; display: block; }
         
-        /* 真实感回形针 (Paper Clip) */
-        .clip {
-            position: absolute; left: -10px; top: 40px; /* 夹在侧面 */
-            width: 14px; height: 45px;
-            border: 2px solid #bbb; border-radius: 10px;
-            z-index: 10; background: transparent;
-            box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        .paper-clip {
+            position: absolute; left: -12px; top: 50px;
+            width: 15px; height: 50px; border: 2px solid #aaa; border-radius: 12px;
+            background: transparent; z-index: 10;
         }
-        .clip::after {
-            content: ""; position: absolute; top: 4px; left: 2px;
-            width: 6px; height: 30px; border: 2px solid #ccc;
-            border-top: none; border-radius: 0 0 5px 5px;
+        .paper-clip::after {
+            content: ""; position: absolute; top: 5px; left: 2px;
+            width: 7px; height: 35px; border: 2px solid #ccc; border-top: none; border-radius: 0 0 6px 6px;
         }
 
-        /* --- 7. 封底便利贴 --- */
-        .footer-note {
-            position: absolute; bottom: 80px; left: 100px;
-            font-size: 26px; font-weight: 300; color: #999;
-            opacity: 0; transition: 1s; padding-left: 20px;
-            border-left: 1px solid #ddd;
+        /* --- 5. 封底便利贴 --- */
+        .footer-msg {
+            position: absolute; bottom: 100px; left: 80px;
+            font-size: 40px; font-weight: 300; letter-spacing: -0.03em; color: #ddd;
+            opacity: 0; transition: 1.5s;
         }
-        .container.final .footer-note { opacity: 1; }
+        .stage.final .footer-msg { opacity: 1; }
 
         @media (max-width: 768px) {
-            .page { width: 94%; height: 82vh; padding: 40px; }
-            .nav { right: 20px; }
-            .nav-item { font-size: 8px; }
-            .polaroid-box { width: 160px; right: 40px; bottom: 40px; }
+            .content-layer { padding: 40px; width: 92%; }
+            .nav-system { right: 20px; }
+            .nav-btn span { font-size: 7px; }
+            .cover-title { font-size: 70px; }
             #cursor { display: none; }
         }
     </style>
@@ -125,46 +118,44 @@
 
 <div id="cursor"></div>
 
-<div class="click-area area-left" onclick="prevPage()"></div>
-<div class="click-area area-right" onclick="nextPage()"></div>
+<div class="click-area prev" onclick="changePage(-1)"></div>
+<div class="click-area next" onclick="changePage(1)"></div>
 
-<div class="container" id="container">
+<div class="stage" id="stage">
     
     <div class="cover" id="cover">
         <h1 class="cover-title">LYDIA<br>YANG</h1>
-        <p class="cover-sub">Strategy • Creative • Archive</p>
+        <div class="cover-tag">// ARCHIVE SYSTEM v5.0</div>
     </div>
 
-    <nav class="nav">
-        <span class="nav-item" id="n1">Creation</span>
-        <span class="nav-item" id="n2">Strategy</span>
-        <span class="nav-item" id="n3">Distribution</span>
-        <span class="nav-item" id="n4">Scrapbook</span>
-        <span class="nav-item" id="n5">Profile</span>
+    <nav class="nav-system">
+        <div class="nav-btn" id="n1"><div class="line"></div><span>01_Creation</span></div>
+        <div class="nav-btn" id="n2"><div class="line"></div><span>02_Strategy</span></div>
+        <div class="nav-btn" id="n3"><div class="line"></div><span>03_Distro</span></div>
+        <div class="nav-btn" id="n4"><div class="line"></div><span>04_Scrapbook</span></div>
+        <div class="nav-btn" id="n5"><div class="line"></div><span>05_Identity</span></div>
     </nav>
 
-    <div class="page" id="main-page">
+    <div class="content-layer" id="content">
         <div>
-            <div class="page-meta" id="p-meta">Index / 01</div>
-            <h2 class="page-title" id="p-title">Section Title</h2>
-            <p class="page-desc" id="p-desc">Description of the content goes here with balanced whitespace.</p>
+            <div class="page-index" id="p-idx">INDEX / 001</div>
+            <h2 class="page-title" id="p-title">LOADING_SYSTEM</h2>
+            <p class="page-desc" id="p-desc">Deep-logic strategy meets high-fidelity creative execution.</p>
         </div>
 
-        <div class="footer-note" id="footer-note">
-            Nice to meet you.
-        </div>
+        <div class="footer-msg" id="f-msg">NICE TO MEET YOU.</div>
 
-        <div class="polaroid-box" id="photo-box" style="display:none;">
-            <div class="clip"></div>
+        <div class="polaroid-frame" id="p-frame" style="display:none;">
+            <div class="paper-clip"></div>
             <img src="me.jpg" alt="Lydia Yang">
-            <div style="margin-top:15px; font-size:10px; opacity:0.2; font-family:monospace;">DSC_2026_01.RAW</div>
+            <div style="margin-top:20px; font-family:monospace; font-size:9px; opacity:0.3; letter-spacing:2px;">LY_SYS_ID.RAW</div>
         </div>
     </div>
 
 </div>
 
 <script>
-    let step = 0; // 0:Cover, 1-5:Pages, 6:End
+    let step = 0; // 0: Cover, 1-5: Pages, 6: End
     const cursor = document.getElementById('cursor');
 
     document.addEventListener('mousemove', (e) => {
@@ -173,47 +164,49 @@
     });
 
     const data = [
-        {}, // placeholder
-        { m: "Index / 01", t: "Content Creation", d: "Merging minimalist aesthetics with industrial precision. We build visual languages that transcend fleeting trends." },
-        { m: "Index / 02", t: "Storytelling", d: "Strategic narratives designed to bridge the gap between human emotion and brand logic. Deep thinking, clear execution." },
-        { m: "Index / 03", t: "Distribution", d: "Calibrating brand signals to reach the right frequency. Navigation through the fragmented digital landscape." },
-        { m: "Index / 04", t: "The Scrapbook", d: "A raw feed of inspiration, half-baked prototypes, and the evolution of a digital archive." },
-        { m: "Index / 05", t: "Profile", d: "Lydia Yang. A strategist fueled by logic and inspired by the 'perfect blur'. Currently based in the digital realm." }
+        {},
+        { idx: "INDEX / 01", title: "Content<br>Creation", desc: "Forging visual identities through minimalist rigor. My approach is defined by the intersection of industrial precision and digital fluidity." },
+        { idx: "INDEX / 02", title: "Strategic<br>Logic", desc: "Narratives that don't just speak—they stick. Engineering the 'why' behind every pixel to ensure long-term brand resonance." },
+        { idx: "INDEX / 03", title: "Global<br>Distro", desc: "Signal optimization across fragmented networks. Ensuring the core message remains undisturbed by digital static." },
+        { idx: "INDEX / 04", title: "Digital<br>Scrapbook", desc: "A raw feed of evolving ideas, sketches, and tactical prototypes. The engine room of creative development." },
+        { idx: "INDEX / 05", title: "Lydia<br>Yang", desc: "Content Strategist. Logic-driven. Inspired by the perfect blur. Currently building in the 2026 digital landscape." }
     ];
 
-    function nextPage() { if (step < 6) { step++; render(); } }
-    function prevPage() { if (step > 0) { step--; render(); } }
+    function changePage(dir) {
+        step = Math.max(0, Math.min(6, step + dir));
+        render();
+    }
 
     function render() {
-        const stage = document.getElementById('container');
-        const cover = document.getElementById('cover');
-        const photo = document.getElementById('photo-box');
-        const footer = document.getElementById('footer-note');
+        const s = document.getElementById('stage');
+        const c = document.getElementById('cover');
+        const ph = document.getElementById('p-frame');
+        const msg = document.getElementById('f-msg');
 
-        // 封面切换
-        step === 0 ? cover.classList.remove('hide') : cover.classList.add('hide');
-        
-        // 内容渲染
+        // 封面逻辑
+        step === 0 ? c.classList.remove('hide') : c.classList.add('hide');
+
+        // 内容与导航逻辑
         if (step >= 1 && step <= 5) {
-            stage.classList.add('active');
-            stage.classList.remove('final');
-            document.getElementById('p-meta').innerText = data[step].m;
-            document.getElementById('p-title').innerText = data[step].t;
-            document.getElementById('p-desc').innerText = data[step].d;
+            s.classList.add('active');
+            s.classList.remove('final');
+            document.getElementById('p-idx').innerText = data[step].idx;
+            document.getElementById('p-title').innerHTML = data[step].title;
+            document.getElementById('p-desc').innerText = data[step].desc;
             
-            photo.style.display = (step === 5) ? "block" : "none";
-            footer.style.display = "none";
+            ph.style.display = (step === 5) ? "block" : "none";
+            msg.style.display = "none";
 
-            document.querySelectorAll('.nav-item').forEach((n, i) => {
-                n.classList.toggle('active', i + 1 === step);
+            document.querySelectorAll('.nav-btn').forEach((btn, i) => {
+                btn.classList.toggle('active', i + 1 === step);
             });
         } else if (step === 6) {
-            stage.classList.remove('active');
-            stage.classList.add('final');
-            footer.style.display = "block";
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            s.classList.remove('active');
+            s.classList.add('final');
+            msg.style.display = "block";
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
         } else {
-            stage.classList.remove('active');
+            s.classList.remove('active');
         }
     }
 </script>
