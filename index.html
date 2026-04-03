@@ -2,261 +2,182 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Archive Fragments | 档案实验室</title>
-    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #121212;
-            --tab-height: 48px;
-            --transition-speed: 0.7s;
-            --bezier: cubic-bezier(0.4, 0, 0.2, 1);
+            --bg-dark: #1a1a1a;
+            --tab-h: 46px; /* 标签高度 */
+            --transition: 0.7s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        body {
-            background-color: var(--bg-dark);
+        body, html {
+            margin: 0; padding: 0;
+            background: var(--bg-dark);
+            color: white;
             font-family: 'EB Garamond', serif;
-            color: #e0e0e0;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
+            height: 100vh; overflow: hidden;
         }
 
-        /* 顶部导航 */
+        /* 顶部装饰栏 */
         header {
-            padding: 25px 50px;
-            display: flex;
-            justify-content: space-between;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            opacity: 0.6;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding: 20px 40px;
+            display: flex; justify-content: space-between;
+            font-size: 12px; text-transform: uppercase; letter-spacing: 2px;
+            border-bottom: 1px solid #333;
+            background: var(--bg-dark);
+            position: relative; z-index: 1000;
         }
 
-        /* 档案总容器 */
         .archive-container {
             position: relative;
-            flex-grow: 1;
-            margin-top: 10px;
-            perspective: 1000px; /* 增加一点空间深度感 */
+            height: calc(100vh - 60px);
+            width: 100%;
         }
 
-        /* 单个文件夹层级 */
+        /* 文件夹单个层级 */
         .folder-layer {
             position: absolute;
             width: 100%;
             height: 100%;
-            left: 0;
-            top: 0;
+            left: 0; top: 0;
+            transition: transform var(--transition);
             display: flex;
             flex-direction: column;
-            /* 关键：分两段处理动画，位移快，层级切换稍慢 */
-            transition: transform var(--transition-speed) var(--bezier), 
-                        z-index 0s linear 0.3s;
-            will-change: transform;
         }
 
-        /* 标签设计 */
+        /* 标签：解决点不动的关键是把标签放在内容区外面 */
         .tab {
-            height: var(--tab-height);
+            height: var(--tab-h);
             padding: 0 30px;
             display: inline-flex;
             align-items: center;
             cursor: pointer;
-            font-size: 18px;
             font-weight: 600;
             border-radius: 12px 12px 0 0;
             width: fit-content;
-            transition: all 0.4s var(--bezier);
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.3);
-            user-select: none;
-            position: relative;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.3);
+            pointer-events: auto; /* 确保可点击 */
             z-index: 10;
         }
 
-        /* 内容区设计 */
+        /* 内容区 */
         .content {
-            flex-grow: 1;
-            padding: 80px 10%;
-            position: relative;
+            flex: 1;
+            padding: 60px 10%;
             box-shadow: 0 -15px 40px rgba(0,0,0,0.5);
-            overflow-y: auto;
             border-top: 1px solid rgba(255,255,255,0.1);
+            overflow-y: auto;
         }
 
-        /* --- 激活状态的核心交互 --- */
+        /* --- 核心：激活态转换 --- */
 
+        /* 选中的那个直接冲到最顶上，不偏移 */
         .folder-layer.active {
-            z-index: 100 !important;
-            transform: translateY(0) !important; /* 抽到最顶部 */
-            transition: transform var(--transition-speed) var(--bezier), z-index 0s;
+            z-index: 500 !important;
+            transform: translateY(0) !important;
         }
 
-        /* 激活时标签移向右侧（原视频精髓） */
+        /* 选中时的标签变侧边栏 */
         .folder-layer.active .tab {
             position: absolute;
-            right: 0;
-            top: 120px;
+            right: 0; top: 100px;
             writing-mode: vertical-rl;
-            height: 200px;
-            padding: 20px 12px;
+            height: 200px; width: 46px;
+            padding: 20px 0;
             border-radius: 15px 0 0 15px;
-            font-size: 20px;
             transform: translateX(0);
-            box-shadow: -10px 0 30px rgba(0,0,0,0.3);
-            animation: tab-pop 0.5s var(--bezier) forwards;
         }
 
-        @keyframes tab-pop {
-            from { transform: translateX(50px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
+        /* --- 颜色与初始偏移 (风琴褶皱效果) --- */
+        /* 这里的 transform 是关键，让它们像阶梯一样露出来 */
+        #layer1 { z-index: 1; transform: translateY(0px); }
+        #layer1 .tab, #layer1 .content { background: #7b2cbf; }
 
-        /* --- 配色方案 (精确匹配视频质感) --- */
-        #layer1 .tab, #layer1 .content { background-color: #6a4c93; } /* 紫 */
-        #layer2 .tab, #layer2 .content { background-color: #1982c4; } /* 蓝 */
-        #layer3 .tab, #layer3 .content { background-color: #8ac926; } /* 绿 */
-        #layer4 .tab, #layer4 .content { background-color: #ff595e; } /* 红 */
-        #layer5 .tab, #layer5 .content { background-color: #ffca3a; color: #333; } /* 黄 */
+        #layer2 { z-index: 2; transform: translateY(46px); }
+        #layer2 .tab, #layer2 .content { background: #3f37c9; }
 
-        /* 内部文档装饰 */
-        .doc-wrapper {
-            max-width: 900px;
-            margin: 0 auto;
-            animation: fade-in 1s ease;
-        }
+        #layer3 { z-index: 3; transform: translateY(92px); }
+        #layer3 .tab, #layer3 .content { background: #ef233c; }
 
-        .receipt-style {
-            background: #f4f1de;
-            color: #333;
-            padding: 25px;
-            width: 280px;
-            transform: rotate(-3deg);
-            box-shadow: 10px 10px 30px rgba(0,0,0,0.4);
-            margin-bottom: 40px;
-            font-family: monospace;
-            border-bottom: 2px dashed #ccc;
-        }
+        #layer4 { z-index: 4; transform: translateY(138px); }
+        #layer4 .tab, #layer4 .content { background: #f8961e; }
 
-        h1 { font-size: 80px; margin-bottom: 30px; font-weight: 400; letter-spacing: -2px; }
-        p { font-size: 24px; line-height: 1.5; max-width: 650px; opacity: 0.8; margin-bottom: 20px; }
+        #layer5 { z-index: 5; transform: translateY(184px); }
+        #layer5 .tab, #layer5 .content { background: #fee440; color: #333; }
 
-        @keyframes fade-in {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* 自定义滚动条 */
-        .content::-webkit-scrollbar { width: 6px; }
-        .content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+        /* 内容装饰 */
+        .inner { max-width: 800px; opacity: 0; transform: translateY(20px); transition: 0.5s 0.3s; }
+        .active .inner { opacity: 1; transform: translateY(0); }
+        h1 { font-size: 70px; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
-    <header>
-        <div>Unindexed Materials / Recovered Entries</div>
-        <div>Fragment 15&mdash;20</div>
-        <div>Sign Up</div>
-    </header>
+<header>
+    <div>Recovered Fragments</div>
+    <div>File: 2026-ALPHA</div>
+</header>
 
-    <div class="archive-container" id="container">
-        
-        <div class="folder-layer" id="layer1" style="--idx: 0">
-            <div class="tab">Lexical Interruptions</div>
-            <div class="content">
-                <div class="doc-wrapper">
-                    <h1>Unverified</h1>
-                    <div class="receipt-style">
-                        FILE #002 <br>
-                        RECEIPT: 1966-MAR-12 <br>
-                        STATUS: PENDING...
-                    </div>
-                    <p>这里有明显的注释迹象。某些段落的缺失，暗示了有人曾试图掩盖文本的原始意图。</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="folder-layer" id="layer2" style="--idx: 1">
-            <div class="tab">Concord Variants</div>
-            <div class="content">
-                <div class="doc-wrapper">
-                    <h1>Variant A</h1>
-                    <p>在所有已知的变量中，17B 是最不稳定的。它拒绝被归类，拒绝被读取。</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="folder-layer" id="layer3" style="--idx: 2">
-            <div class="tab">Unanchored Statements</div>
-            <div class="content">
-                <div class="doc-wrapper">
-                    <h1>Silence</h1>
-                    <p>当所有的声音被移除，剩下的只有这份文档。它不代表真相，只代表存在过。</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="folder-layer" id="layer4" style="--idx: 3">
-            <div class="tab">Varnell Collection</div>
-            <div class="content">
-                <div class="doc-wrapper">
-                    <h1>Fragment 17B</h1>
-                    <p>这是原视频中展示的红色核心区域。注意右侧标签的平滑切换动效。</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="folder-layer active" id="layer5" style="--idx: 4">
-            <div class="tab">Margin Events</div>
-            <div class="content">
-                <div class="doc-wrapper">
-                    <h1>The Edge</h1>
-                    <p>默认选中的起始页。点击上方任意彩色标签尝试切换档案。</p>
-                </div>
-            </div>
-        </div>
-
+<div class="archive-container" id="main-container">
+    
+    <div class="folder-layer" id="layer1" data-order="0">
+        <div class="tab">Lexical Interruptions</div>
+        <div class="content"><div class="inner"><h1>Fragment 15</h1><p>这是紫色档案的内容...</p></div></div>
     </div>
 
-    <script>
-        const layers = document.querySelectorAll('.folder-layer');
-        const tabHeight = 48; // 对应 CSS 中的 --tab-height
+    <div class="folder-layer" id="layer2" data-order="1">
+        <div class="tab">Concord Variants</div>
+        <div class="content"><div class="inner"><h1>Fragment 16</h1><p>这是蓝色档案的内容...</p></div></div>
+    </div>
 
-        function updatePositions() {
-            layers.forEach((layer) => {
-                if (!layer.classList.contains('active')) {
-                    // 计算非激活层的堆叠位置
-                    const idx = layer.getAttribute('style').match(/--idx: (\d+)/)[1];
-                    layer.style.transform = `translateY(${idx * tabHeight}px)`;
-                }
-            });
-        }
+    <div class="folder-layer" id="layer3" data-order="2">
+        <div class="tab">Unanchored Statements</div>
+        <div class="content"><div class="inner"><h1>Fragment 17</h1><p>这是红色档案的内容...</p></div></div>
+    </div>
 
-        // 初始化位置
-        updatePositions();
+    <div class="folder-layer" id="layer4" data-order="3">
+        <div class="tab">Varnell Collection</div>
+        <div class="content"><div class="inner"><h1>Fragment 18</h1><p>这是橙色档案的内容...</p></div></div>
+    </div>
 
+    <div class="folder-layer active" id="layer5" data-order="4">
+        <div class="tab">Margin Events</div>
+        <div class="content"><div class="inner"><h1>Fragment 19</h1><p>这是黄色档案的内容。默认它是打开的。</p></div></div>
+    </div>
+
+</div>
+
+<script>
+    const layers = document.querySelectorAll('.folder-layer');
+    const tabH = 46;
+
+    // 核心逻辑：重新计算所有未激活层的位置
+    function resetPositions() {
         layers.forEach((layer) => {
-            const tab = layer.querySelector('.tab');
-            tab.addEventListener('click', () => {
-                if (layer.classList.contains('active')) return;
-
-                // 切换激活状态
-                layers.forEach(l => l.classList.remove('active'));
-                layer.classList.add('active');
-
-                // 重新计算未激活层的堆叠
-                updatePositions();
-            });
+            if (!layer.classList.contains('active')) {
+                const order = layer.getAttribute('data-order');
+                layer.style.transform = `translateY(${order * tabH}px)`;
+                layer.style.zIndex = parseInt(order) + 1;
+            }
         });
-    </script>
+    }
+
+    layers.forEach((layer) => {
+        const tab = layer.querySelector('.tab');
+        tab.addEventListener('click', (e) => {
+            // 清除旧的 active
+            layers.forEach(l => l.classList.remove('active'));
+            // 设为 active
+            layer.classList.add('active');
+            // 重新排列其他层
+            resetPositions();
+        });
+    });
+
+    // 初始化执行一次
+    resetPositions();
+</script>
+
 </body>
 </html>
