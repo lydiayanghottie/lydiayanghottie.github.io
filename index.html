@@ -1,193 +1,194 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LYDIA YANG // ARCHIVE_019</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <title>Lydia Yang | Hand-drawn Archive</title>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Permanent+Marker&family=Kalam:wght@300;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #e5e5e1; /* 模拟图中的水泥色/浅灰背景 */
-            --paper: #ffffff;
-            --metal: #999;
-            --glass: rgba(255, 255, 255, 0.4);
-            --font: 'Inter', -apple-system, sans-serif;
+            --bg: #121213;
+            --frosted: rgba(255, 255, 255, 0.05);
+            --paper: #fcfcf9;
+            --sticky-note: #fdf59a; /* 经典便利贴黄 */
+            --c1: #d26464; --c2: #648cd2; --c3: #64d28c; --c4: #d2b464; --c5: #a064d2;
+            --smooth: cubic-bezier(0.2, 1, 0.3, 1);
         }
 
-        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; cursor: crosshair; }
-        body { background-color: var(--bg); margin: 0; overflow: hidden; height: 100dvh; font-family: var(--font); color: #111; }
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; cursor: none; }
+        body { background-color: var(--bg); margin: 0; overflow: hidden; height: 100dvh; font-family: "Arial", sans-serif; }
 
-        /* --- 交互感应区 --- */
-        .click-zone { position: fixed; top: 0; bottom: 0; z-index: 5000; width: 50%; }
-        .next { right: 0; } .prev { left: 0; }
+        /* --- 1. 交互区域覆盖层 (翻书逻辑) --- */
+        .click-zone { position: fixed; top: 0; bottom: 0; z-index: 2000; width: 30%; }
+        .zone-left { left: 0; } /* 后退 */
+        .zone-right { right: 0; width: 70%; } /* 前翻 */
 
-        .stage { position: relative; width: 100%; height: 100dvh; display: flex; align-items: center; justify-content: center; }
-
-        /* --- 1. 文件夹基础结构 --- */
-        .binder {
-            position: relative; width: 85%; max-width: 800px; height: 90vh;
-            background: var(--paper); border-radius: 4px;
-            box-shadow: 20px 30px 60px rgba(0,0,0,0.1);
-            overflow: hidden; display: flex; flex-direction: column;
+        /* --- 2. 准心鼠标 --- */
+        #cursor {
+            width: 30px; height: 30px; border: 1px solid rgba(255,255,255,0.5); border-radius: 50%;
+            position: fixed; pointer-events: none; z-index: 9999; mix-blend-mode: difference;
+            transition: transform 0.1s;
         }
 
-        /* 背景大字母表 (图1风格) */
-        .alphabet-bg {
-            position: absolute; inset: 40px;
-            font-size: 10vh; font-weight: 700; line-height: 1.2;
-            color: #eee; letter-spacing: 0.5em; pointer-events: none;
-            word-break: break-all; z-index: 1; text-align: justify;
+        .stage { position: relative; width: 95%; max-width: 1000px; height: 85vh; perspective: 2000px; }
+
+        /* --- 3. 封底 + 便利贴 --- */
+        .back-folder {
+            position: absolute; inset: 0; background: #222; border-radius: 12px;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.8); z-index: 1;
+        }
+        .sticky-note {
+            position: absolute; bottom: 40px; right: 40px; width: 220px; height: 220px;
+            background: var(--sticky-note); padding: 25px; transform: rotate(-3deg);
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.2);
+            font-family: 'Caveat', cursive; color: #1a1a50; font-size: 26px; line-height: 1.2;
+            background-image: radial-gradient(#00000011 1px, transparent 0); background-size: 20px 20px;
         }
 
-        /* 左侧活页环 */
-        .rings { position: absolute; left: 15px; top: 0; bottom: 0; display: flex; flex-direction: column; justify-content: space-around; z-index: 2000; }
-        .ring { width: 30px; height: 30px; border: 3px solid #ccc; border-radius: 50%; border-right-color: transparent; transform: rotate(45deg); }
+        /* --- 4. 书签 (夹在中间) --- */
+        .tab-nav {
+            position: absolute; right: -15px; top: 80px;
+            display: flex; flex-direction: column; gap: 10px; z-index: 5;
+        }
+        .tab {
+            width: 120px; height: 45px; border-radius: 0 8px 8px 0;
+            display: flex; align-items: center; padding-left: 20px;
+            font-family: 'Permanent Marker', cursive; font-size: 11px; color: white;
+            transition: 0.5s var(--smooth); backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.1); opacity: 0.9;
+        }
+        .tab.active { width: 150px; padding-left: 40px; }
 
-        /* --- 2. 磨砂覆盖层 --- */
-        .folder-cover {
-            position: absolute; inset: 0; z-index: 1500;
-            background: var(--glass);
-            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255,255,255,0.5);
-            transition: transform 1s cubic-bezier(0.8, 0, 0.2, 1), opacity 0.5s;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        /* --- 5. 内容纸张 --- */
+        .paper-layer {
+            position: absolute; inset: 15px; background: var(--paper); border-radius: 5px;
+            z-index: 10; transition: all 0.8s var(--smooth);
+            background-image: url("https://www.transparenttextures.com/patterns/natural-paper.png");
+            box-shadow: -5px 0 20px rgba(0,0,0,0.1);
+            transform-origin: left; padding: 60px; color: #111;
         }
-        .folder-cover.open { transform: translateX(105%); opacity: 0; }
+        .stage:not(.active) .paper-layer { transform: rotateY(10deg) translateX(20px); opacity: 0; }
 
-        /* 封面中间的巨大 WORLING 标签 */
-        .main-label {
-            background: white; padding: 15px 40px;
-            font-size: 60px; font-weight: 900; letter-spacing: -2px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-        }
-
-        /* 顶部身份卡与回形针 */
-        .id-card {
-            position: absolute; top: 40px; left: 60px;
-            background: white; padding: 15px; width: 220px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            display: flex; gap: 15px; align-items: flex-start;
-        }
-        .id-card img { width: 70px; height: 90px; object-fit: cover; background: #eee; }
-        .id-info { font-size: 10px; font-weight: 700; line-height: 1.4; text-transform: uppercase; }
-        
-        /* 银色回形针 (Paper Clip) */
-        .paper-clip {
-            position: absolute; top: -10px; left: 100px;
-            width: 14px; height: 40px; border: 2px solid #999; border-radius: 10px;
-            z-index: 10;
-        }
-        .paper-clip::after {
-            content: ""; position: absolute; top: 3px; left: 2px;
-            width: 6px; height: 28px; border: 2px solid #aaa; border-top: none; border-radius: 0 0 5px 5px;
-        }
-
-        /* --- 3. 内部内容页 --- */
-        .content-page {
+        /* --- 6. 磨砂封面 (最上层) --- */
+        .cover {
             position: absolute; inset: 0; z-index: 100;
-            padding: 100px 80px; display: flex; flex-direction: column;
-            opacity: 0; transition: opacity 0.5s;
+            background: var(--frosted); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
+            border-radius: 12px; transition: 1.2s var(--smooth); transform-origin: left;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            border: 1px solid rgba(255,255,255,0.1);
         }
-        .content-page.active { opacity: 1; }
+        .cover.open { transform: rotateY(-110deg); opacity: 0; pointer-events: none; }
 
-        .page-num { font-size: 10px; font-weight: 900; opacity: 0.3; margin-bottom: 30px; }
-        .page-title { font-size: 50px; font-weight: 900; letter-spacing: -2px; margin: 0 0 40px 0; line-height: 0.9; }
-        .page-text { font-size: 18px; line-height: 1.5; max-width: 450px; color: #444; }
+        /* 封面马克笔字体 */
+        .marker-name { font-family: 'Permanent Marker', sans-serif; font-size: 80px; color: #000; text-align: center; line-height: 1; }
+        .marker-sub { font-family: 'Kalam', cursive; font-size: 20px; color: #222; margin-top: 10px; opacity: 0.8; }
 
-        /* 底部导航指示器 */
-        .nav-indicator {
-            position: absolute; bottom: 40px; right: 40px;
-            display: flex; gap: 10px; font-size: 9px; font-weight: 900; opacity: 0.2;
-        }
+        /* 内容字体 */
+        .doc-title { font-family: 'Permanent Marker', cursive; font-size: 40px; margin-bottom: 20px; }
+        .doc-body { font-family: 'Kalam', cursive; font-size: 22px; line-height: 1.5; color: #333; }
 
-        @media (max-width: 768px) {
-            .binder { width: 92%; height: 85vh; }
-            .content-page { padding: 60px 40px; }
-            .main-label { font-size: 40px; }
-            .id-card { transform: scale(0.8); left: 20px; top: 20px; }
+        @media (max-width: 600px) {
+            .tab-nav { right: -5px; top: auto; bottom: 50px; }
+            .tab { width: 80px; font-size: 9px; }
+            .marker-name { font-size: 50px; }
+            .sticky-note { width: 160px; height: 160px; font-size: 20px; right: 20px; }
         }
     </style>
 </head>
 <body>
 
-<div class="click-zone prev" onclick="change(-1)"></div>
-<div class="click-zone next" onclick="change(1)"></div>
+<div id="cursor"></div>
 
-<div class="stage">
+<div class="click-zone zone-left" onclick="goBack()"></div>
+<div class="click-zone zone-right" onclick="goForward()"></div>
+
+<div class="stage" id="stage">
     
-    <div class="binder">
-        <div class="alphabet-bg">
-            A B C D E F G H I J K L M N O P Q R S T U V W X Y Z
-        </div>
-
-        <div class="rings">
-            <div class="ring"></div>
-            <div class="ring"></div>
-            <div class="ring"></div>
-        </div>
-
-        <div class="folder-cover" id="cover">
-            <div class="paper-clip"></div>
-            <div class="id-card">
-                <img src="me.jpg" alt="ID">
-                <div class="id-info">
-                    LYDIA YANG<br>
-                    STRATEGIST<br>
-                    ARCHIVE / 2026<br>
-                    YEAR_3
-                </div>
-            </div>
-            <div class="main-label">WORLING</div>
-            <div style="margin-top: 20px; font-size: 9px; letter-spacing: 5px; opacity: 0.5;">[ TAP_TO_DECRYPT ]</div>
-        </div>
-
-        <div class="content-page" id="p-content">
-            <div class="page-num" id="p-num">PAGE_01</div>
-            <h2 class="page-title" id="p-title">LOADING...</h2>
-            <p class="page-text" id="p-desc">...</p>
-            
-            <div class="nav-indicator">
-                <span id="nav-info">01 / 05</span>
+    <div class="back-folder">
+        <div class="sticky-note">
+            <div style="font-size: 14px; opacity: 0.5; margin-bottom: 10px;">Memo:</div>
+            Nice to Meet U :)
+            <div style="margin-top: 20px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 10px; font-size: 16px;">
+                * Don't forget to <br>check the scrapbook!
             </div>
         </div>
+    </div>
+
+    <nav class="tab-nav">
+        <div class="tab" id="t1" style="background:var(--c1)">Content Creation</div>
+        <div class="tab" id="t2" style="background:var(--c2)">Storytelling</div>
+        <div class="tab" id="t3" style="background:var(--c3)">Distribution</div>
+        <div class="tab" id="t4" style="background:var(--c4)">Scrapbook</div>
+        <div class="tab" id="t5" style="background:var(--c5)">About</div>
+    </nav>
+
+    <div class="paper-layer" id="paper">
+        <div id="doc-ref" style="font-family: monospace; font-size: 12px; opacity: 0.4;">MJ-001</div>
+        <h1 class="doc-title" id="f-title">TITLE</h1>
+        <p class="doc-body" id="f-desc">Content...</p>
+    </div>
+
+    <div class="cover" id="cover">
+        <div class="marker-name">LYDIA<br>YANG</div>
+        <div class="marker-sub">Content Strategist</div>
     </div>
 
 </div>
 
 <script>
-    let step = 0; // 0:Cover, 1-5:Pages
-    const data = [
-        {},
-        { t: "CONTENT<br>CREATION", d: "In an innovative twist on traditional reference materials, we redefine digital archival as a deeply personal and introspective study." },
-        { t: "STRATEGIC<br>LOGIC", d: "The dictionary contains a selection of terms based on individual interests. Every pixel is a calibrated response to digital noise." },
-        { t: "GLOBAL<br>DISTRO", d: "Navigating through fragmented signals. We optimize the frequency of brand storytelling for a hyper-connected era." },
-        { t: "DIGITAL<br>SCRAPBOOK", d: "A collection of emotions and personal interpretations of scientific terms. The raw, unfiltered engine of creativity." },
-        { t: "ABOUT<br>LYDIA", d: "Lydia Yang is a strategist based in the intersection of industrial precision and human intuition." }
-    ];
+    let currentPage = 0; // 0: 封面, 1-5: 目录页
+    const cursor = document.getElementById('cursor');
 
-    function change(dir) {
-        step = Math.max(0, Math.min(5, step + dir));
-        render();
+    document.addEventListener('mousemove', (e) => {
+        cursor.style.left = e.clientX - 15 + 'px';
+        cursor.style.top = e.clientY - 15 + 'px';
+    });
+
+    const archive = {
+        1: { title: "① Content Creation", desc: "Using a marker to define visual boundaries. Everything starts with a blank page and a bold stroke." },
+        2: { title: "② Content Strategy", desc: "Narratives that stick. Building the 'why' behind the 'what' using deep logic and human empathy." },
+        3: { title: "③ Distribution & PR", desc: "Amplifying signals in the noise. Strategic outreach meets precision-targeted storytelling." },
+        4: { title: "④ Scrapbook", desc: "The raw bits. Experimental notes, sketches, and half-baked ideas that might just work." },
+        5: { title: "⑤ About Me", desc: "Lydia Yang. A mix of industrial precision and messy human creativity. Coffee-fueled and logic-driven." }
+    };
+
+    function goForward() {
+        if (currentPage < 5) {
+            currentPage++;
+            updateUI();
+        }
     }
 
-    function render() {
-        const cv = document.getElementById('cover');
-        const ct = document.getElementById('p-content');
-        
-        // 封面逻辑
-        if (step === 0) {
-            cv.classList.remove('open');
-            ct.classList.remove('active');
+    function goBack() {
+        if (currentPage > 0) {
+            currentPage--;
+            updateUI();
+        }
+    }
+
+    function updateUI() {
+        const stage = document.getElementById('stage');
+        const cover = document.getElementById('cover');
+        const paper = document.getElementById('paper');
+
+        // 封面状态
+        if (currentPage === 0) {
+            cover.classList.remove('open');
+            stage.classList.remove('active');
         } else {
-            cv.classList.add('open');
-            ct.classList.add('active');
+            cover.classList.add('open');
+            stage.classList.add('active');
             
             // 更新内容
-            const pageData = data[step];
-            document.getElementById('p-num').innerText = "PAGE_0" + step;
-            document.getElementById('p-title').innerHTML = pageData.t;
-            document.getElementById('p-desc').innerText = pageData.d;
-            document.getElementById('nav-info').innerText = `0${step} / 05`;
+            const content = archive[currentPage];
+            document.getElementById('f-title').innerText = content.title;
+            document.getElementById('f-desc').innerText = content.desc;
+            document.getElementById('doc-ref').innerText = "ARCHIVE_REF: 00" + currentPage;
+
+            // 更新标签高亮
+            document.querySelectorAll('.tab').forEach((t, i) => {
+                t.classList.toggle('active', i + 1 === currentPage);
+            });
         }
     }
 </script>
