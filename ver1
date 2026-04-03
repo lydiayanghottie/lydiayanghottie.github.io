@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lydia Yang</title>
+    <style>
+        /* 这里设置宝蓝色背景 */
+        body { 
+            margin: 0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            background-color: #0047AB; /* 经典的宝蓝色 */
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            color: white;
+        }
+
+        .greeting-box {
+            font-size: 3rem;
+            font-weight: bold;
+            height: 80px; /* 固定高度防止抖动 */
+        }
+
+        /* 动画效果：淡入淡出 */
+        .fade-in-out {
+            animation: fadeInOut 3s infinite;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(10px); }
+            20% { opacity: 1; transform: translateY(0); }
+            80% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-10px); }
+        }
+
+        .name {
+            font-size: 1.5rem;
+            margin-top: 20px;
+            letter-spacing: 2px;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="greeting" class="greeting-box">你好</div>
+        <div class="name">我是 Lydia Yang</div>
+    </div>
+
+    <script>
+        // 中、英、法三语数组
+        const greetings = ["你好", "Hello", "Bonjour"];
+        let currentIndex = 0;
+        const greetingElement = document.getElementById("greeting");
+
+        function updateGreeting() {
+            // 切换文字内容
+            greetingElement.textContent = greetings[currentIndex];
+            
+            // 重新触发动画
+            greetingElement.classList.remove("fade-in-out");
+            void greetingElement.offsetWidth; // 触发重绘
+            greetingElement.classList.add("fade-in-out");
+
+            // 循环索引
+            currentIndex = (currentIndex + 1) % greetings.length;
+        }
+
+        // 每 3 秒换一次语言
+        setInterval(updateGreeting, 3000);
+        updateGreeting(); // 页面加载时立即执行一次
+    </script>
+</body>
+</html>
