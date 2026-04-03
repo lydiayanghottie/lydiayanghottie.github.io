@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LYDIA YANG // DALI_1998</title>
+    <title>LYDIA YANG // ARCHIVE_1998</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #cececa; 
+            --bg: #c5c5c1; 
             --paper: #ffffff;
-            --glass: rgba(255, 255, 255, 0.25);
+            --glass: rgba(255, 255, 255, 0.35);
+            --accent: #000;
             --curve: cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; cursor: crosshair; }
         body { background-color: var(--bg); margin: 0; overflow: hidden; height: 100dvh; font-family: 'Inter', sans-serif; }
 
+        /* 交互区 */
         .click-zone { position: fixed; top: 0; bottom: 0; z-index: 5000; width: 45%; }
         .next { right: 0; } .prev { left: 0; }
 
@@ -24,99 +26,79 @@
         /* --- 1. 3D 书籍容器 --- */
         .book-container {
             position: relative; width: 90%; max-width: 900px; height: 85vh;
-            transform-style: preserve-3d;
+            transform-style: preserve-3d; transition: transform 1s var(--curve);
         }
 
-        /* --- 2. 封底 (带 MADE IN DALI 条形码) --- */
+        /* --- 2. 封底 (Back Cover) --- */
         .back-cover {
             position: absolute; inset: 0; z-index: 5;
             background: var(--glass);
-            backdrop-filter: blur(45px) brightness(1.1); -webkit-backdrop-filter: blur(45px);
-            border: 1px solid rgba(255,255,255,0.3); border-radius: 4px;
-            display: flex; align-items: flex-end; justify-content: flex-end; padding: 50px;
+            backdrop-filter: blur(40px) contrast(1.1); -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(255,255,255,0.4); border-radius: 4px;
+            display: flex; align-items: flex-end; justify-content: flex-end; padding: 40px;
         }
 
-        .barcode-area {
-            display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
+        /* 黑色二维码标签贴 */
+        .barcode-sticker {
+            background: #000; color: #fff; padding: 10px; width: 120px;
+            display: flex; flex-direction: column; align-items: center; gap: 5px;
+            font-family: monospace; transform: rotate(-1deg);
         }
-        /* 由字母组成的条形码效果 */
-        .dali-barcode {
-            width: 160px; height: 60px;
-            background: repeating-linear-gradient(90deg, 
-                #000 0px, #000 1px, 
-                transparent 1px, transparent 4px,
-                #000 4px, #000 7px,
-                transparent 7px, transparent 8px
-            );
-            position: relative;
-        }
-        .barcode-text {
-            font-family: monospace; font-size: 10px; font-weight: 900; 
-            letter-spacing: 4px; color: #000; text-transform: uppercase;
-        }
+        .qr-mock { width: 100px; height: 100px; background: repeating-linear-gradient(45deg, #000, #000 2px, #fff 2px, #fff 4px); }
+        .barcode-num { font-size: 14px; font-weight: 900; letter-spacing: 2px; }
 
         /* --- 3. 纸张内容层 --- */
         .paper-stack {
-            position: absolute; inset: 12px; background: var(--paper); z-index: 10;
-            box-shadow: 0 10px 50px rgba(0,0,0,0.1); border-radius: 2px;
-            padding: 100px 80px; transition: opacity 0.5s var(--curve);
-            opacity: 0; pointer-events: none;
+            position: absolute; inset: 10px; background: var(--paper); z-index: 10;
+            box-shadow: 0 20px 80px rgba(0,0,0,0.15); border-radius: 2px;
+            padding: 100px 80px; transition: transform 0.8s var(--curve), opacity 0.4s;
         }
-        .paper-stack.active { opacity: 1; pointer-events: auto; }
 
-        /* 侧边书签 */
+        /* 侧边书签 - 优化手机端档字问题 */
         .tabs-nav {
-            position: absolute; left: 100%; top: 120px; z-index: 800;
-            display: flex; flex-direction: column; gap: 4px;
+            position: absolute; left: 100%; top: 100px; z-index: 800;
+            display: flex; flex-direction: column; gap: 5px;
+            transform: translateX(-10px); /* 默认收缩 */
+            transition: 0.3s;
         }
         .tab {
-            width: 80px; height: 35px; background: rgba(0,0,0,0.04);
+            width: 80px; height: 32px; background: rgba(0,0,0,0.05);
             font-size: 9px; font-weight: 900; display: flex; align-items: center; 
-            padding-left: 12px; color: #aaa; transition: 0.4s var(--curve);
+            padding-left: 10px; border-radius: 0 4px 4px 0; color: #888;
+            backdrop-filter: blur(10px); transition: 0.4s var(--curve);
         }
-        .tab.active { background: #000; color: #fff; width: 110px; transform: translateX(-5px); }
+        .tab.active { background: #000; color: #fff; width: 110px; transform: translateX(0); }
 
-        /* --- 4. 3D 磨砂封面 (Lydia Yang + 黑色长尾夹) --- */
+        /* --- 4. 3D 磨砂封面 --- */
         .front-cover {
             position: absolute; inset: 0; z-index: 1000;
             background: var(--glass);
-            backdrop-filter: blur(35px) saturate(110%); -webkit-backdrop-filter: blur(35px);
-            border: 1px solid rgba(255,255,255,0.4);
+            /* 模拟磨砂颗粒感 */
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            background-blend-mode: overlay;
+            backdrop-filter: blur(30px) saturate(110%); -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(255,255,255,0.5);
             transform-origin: left center; transition: 1.2s var(--curve);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            display: flex; align-items: center; justify-content: center;
         }
-        .front-cover.open { transform: rotateY(-110deg); opacity: 0; pointer-events: none; }
+        .front-cover.open { transform: rotateY(-105deg) scale(1.02); opacity: 0; pointer-events: none; }
 
-        .cover-title { font-size: 80px; font-weight: 900; letter-spacing: -5px; color: #000; margin-bottom: 20px; }
-
-        /* 黑色长尾夹宝丽来 */
-        .binder-clip-photo {
-            position: absolute; top: 60px; right: 60px;
-            width: 180px; background: #fff; padding: 12px 12px 40px 12px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.1); transform: rotate(3deg);
-        }
-        .binder-clip-photo img { width: 100%; display: block; filter: contrast(1.05); }
-        
-        /* 黑色金属长尾夹主体 */
-        .clip-top {
-            position: absolute; top: -25px; left: 50%; transform: translateX(-50%);
-            width: 40px; height: 30px; background: #222; border-radius: 2px; z-index: 10;
-        }
-        .clip-handle {
-            position: absolute; top: -45px; left: 50%; transform: translateX(-50%);
-            width: 30px; height: 40px; border: 2px solid #666; border-radius: 15px 15px 0 0;
-            border-bottom: none;
+        .cover-plate {
+            background: #fff; padding: 25px 60px; font-size: 60px; font-weight: 900;
+            letter-spacing: -3px; box-shadow: 0 20px 50px rgba(0,0,0,0.1);
         }
 
-        /* 内容 */
-        .title { font-size: clamp(35px, 7vw, 75px); font-weight: 900; letter-spacing: -3px; line-height: 0.9; margin: 0; }
-        .desc { font-size: 18px; line-height: 1.5; color: #333; margin-top: 40px; max-width: 480px; }
+        /* 内容元素 */
+        .title { font-size: clamp(40px, 8vw, 80px); font-weight: 900; letter-spacing: -4px; line-height: 0.85; margin: 0; }
+        .desc { font-size: 18px; line-height: 1.4; color: #333; margin-top: 40px; max-width: 450px; }
 
+        /* 手机端适配 */
         @media (max-width: 768px) {
-            .paper-stack { padding: 80px 30px; }
-            .cover-title { font-size: 50px; }
-            .binder-clip-photo { width: 140px; right: 20px; top: 40px; }
-            .tabs-nav { display: none; } /* 移动端保持纯净 */
+            .paper-stack { padding: 60px 30px; }
+            .tabs-nav { top: auto; bottom: 40px; left: auto; right: 0; transform: translateX(60px); }
+            .tabs-nav:hover { transform: translateX(0); } /* 手机触碰滑出 */
+            .tab { width: 70px; font-size: 8px; }
+            .cover-plate { padding: 15px 30px; font-size: 35px; }
         }
     </style>
 </head>
@@ -130,9 +112,9 @@
     <div class="book-container">
         
         <div class="back-cover">
-            <div class="barcode-area">
-                <div class="dali-barcode"></div>
-                <div class="barcode-text">MADE IN DALI // 1998</div>
+            <div class="barcode-sticker">
+                <div class="qr-mock"></div>
+                <div class="barcode-num">1 9 9 8</div>
             </div>
         </div>
 
@@ -143,22 +125,16 @@
         </div>
 
         <nav class="tabs-nav">
-            <div class="tab" id="t1">CREATION</div>
-            <div class="tab" id="t2">STRATEGY</div>
-            <div class="tab" id="t3">DISTRO</div>
-            <div class="tab" id="t4">SCRAPBOOK</div>
-            <div class="tab" id="t5">PROFILE</div>
+            <div class="tab" id="t1">01_CREATION</div>
+            <div class="tab" id="t2">02_STRATEGY</div>
+            <div class="tab" id="t3">03_DISTRO</div>
+            <div class="tab" id="t4">04_SCRAPBOOK</div>
+            <div class="tab" id="t5">05_PROFILE</div>
         </nav>
 
         <div class="front-cover" id="cover">
-            <div class="binder-clip-photo">
-                <div class="clip-handle"></div>
-                <div class="clip-top"></div>
-                <img src="me.jpg" alt="Lydia Yang">
-            </div>
-            
-            <h1 class="cover-title">LYDIA<br>YANG</h1>
-            <div style="font-size:9px; letter-spacing:5px; font-weight:700; opacity:0.4;">STRATEGY & ARCHIVE</div>
+            <div class="cover-plate">WORLING</div>
+            <div style="position:absolute; bottom:40px; font-size:9px; letter-spacing:4px; font-weight:700; opacity:0.4;">[ 1998_SERIES_ARCHIVE ]</div>
         </div>
 
     </div>
@@ -169,11 +145,11 @@
     let step = 0; // 0:Cover, 1-5:Pages, 6:End
     const data = [
         {},
-        { i: "INDEX / 01", t: "CONTENT<br>CREATION", d: "A study of visual systems and industrial metaphors. My work translates complex data into visceral digital experiences." },
-        { i: "INDEX / 02", t: "STRATEGIC<br>LOGIC", d: "Engineering narratives that bridge the gap between technical rigor and human intuition." },
-        { i: "INDEX / 03", t: "GLOBAL<br>DISTRO", d: "Optimizing signal frequency across fragmented landscapes. Ensuring the core message remains undisturbed." },
-        { i: "INDEX / 04", t: "THE<br>SCRAPBOOK", d: "The engine room. A collection of unfiltered insights, raw prototypes, and tactical experiments." },
-        { i: "INDEX / 05", t: "IDENTITY<br>PROFILE", d: "Lydia Yang. Established 1998. Based in the intersection of creative logic and digital archive systems." }
+        { i: "INDEX / 01", t: "CONTENT<br>CREATION", d: "Experimental archival aesthetics. Merging industrial precision with digital fluidity for the next generation of creative systems." },
+        { i: "INDEX / 02", t: "STRATEGIC<br>LOGIC", d: "Engineering narratives that stick. We bridge the gap between technical rigor and human intuition." },
+        { i: "INDEX / 03", t: "GLOBAL<br>DISTRO", d: "Calibrating signals in a hyper-connected era. Strategic signal optimization across fragmented digital landscapes." },
+        { i: "INDEX / 04", t: "THE<br>SCRAPBOOK", d: "Raw insights and tactical prototypes. The unfiltered engine room of digital development." },
+        { i: "INDEX / 05", t: "IDENTITY<br>PROFILE", d: "Lydia Yang. Content Strategist. Based in the intersection of logic and creative vision. Established 1998." }
     ];
 
     function go(dir) {
@@ -185,21 +161,24 @@
         const cv = document.getElementById('cover');
         const pp = document.getElementById('paper');
         
+        // 封面与封底状态
         if (step === 0) {
             cv.classList.remove('open');
-            pp.classList.remove('active');
+            pp.style.opacity = "0";
         } else if (step === 6) {
             cv.classList.add('open');
-            pp.classList.remove('active'); // 露出封底
+            pp.style.opacity = "0"; // 露出封底
         } else {
             cv.classList.add('open');
-            pp.classList.add('active');
+            pp.style.opacity = "1";
             
+            // 更新纸张内容
             const p = data[step];
             document.getElementById('p-idx').innerText = p.i;
             document.getElementById('p-title').innerHTML = p.t;
             document.getElementById('p-desc').innerText = p.d;
 
+            // 书签高亮
             document.querySelectorAll('.tab').forEach((t, i) => {
                 t.classList.toggle('active', i + 1 === step);
             });
