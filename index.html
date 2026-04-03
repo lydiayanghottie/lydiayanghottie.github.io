@@ -3,274 +3,235 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Classified Archive | Content Strategist</title>
+    <title>Personal Case File | Archive</title>
     <style>
         :root {
-            --bg-color: #c0c0c0; /* 工业感的水泥灰背景 */
-            --folder-glass: rgba(255, 255, 255, 0.35); /* 磨砂外壳 */
-            --paper-sheet: #fdfdfb; /* 高级档案纸色 */
-            --ink-black: #1a1a1f;
-            /* 莫兰迪索引色系 */
-            --tab-color-0: #8c8c8c; /* About - 中性灰 */
-            --tab-color-1: #bda367; /* Content - 姜黄 */
-            --tab-color-2: #708090; /* Strategy - 灰蓝 */
-            --tab-color-3: #8f997e; /* Distro - 豆绿 */
-            --tab-color-4: #a06e6e; /* Scraps - 砖红 */
+            --bg-color: #d2d2d7; /* Apple 铝金属灰 */
+            --folder-glass: rgba(255, 255, 255, 0.45);
+            --paper: #fefefc;
+            --ink: #1d1d1f;
+            --tab-1: #e28a7c; --tab-2: #84a59d; --tab-3: #f5cac3; --tab-4: #f7ede2; --tab-5: #f28482;
         }
 
         body {
             background-color: var(--bg-color);
-            background-image: radial-gradient(circle, rgba(0,0,0,0.05) 1px, transparent 1px);
-            background-size: 30px 30px; /* 背景加入微弱网格感 */
             margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            font-family: "SF Pro Text", -apple-system, BlinkMacSystemFont, sans-serif;
-            overflow: hidden;
-            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro", sans-serif;
+            overflow-x: hidden;
+            perspective: 1500px; /* 3D 深度 */
         }
 
-        /* 档案夹外壳容器 */
+        /* 档案夹主容器 */
         .archive-folder {
             position: relative;
-            width: 900px;
-            height: 620px;
+            width: 90%;
+            max-width: 960px;
+            height: 640px;
             background: var(--folder-glass);
-            backdrop-filter: blur(20px); /* Apple 风格磨砂 */
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.4);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
             border-radius: 12px 40px 40px 12px;
-            box-shadow: 0 40px 100px rgba(0,0,0,0.15);
+            box-shadow: 0 40px 80px rgba(0,0,0,0.12), inset 0 0 20px rgba(255,255,255,0.5);
             display: flex;
-            padding: 25px;
+            padding: 20px;
+            transition: all 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transform: rotateY(-15deg) rotateX(5deg); /* 初始 3D 侧方 */
             box-sizing: border-box;
         }
 
-        /* 内部活动纸张 */
-        .paper-inner {
+        /* 点击书签后平铺展开 */
+        .archive-folder.active {
+            transform: rotateY(0deg) rotateX(0deg) scale(1.02);
+            box-shadow: 0 60px 120px rgba(0,0,0,0.18);
+        }
+
+        /* 内部纸张 */
+        .paper-content {
             position: relative;
             flex: 1;
-            background: var(--paper-sheet);
+            background: var(--paper);
             height: 100%;
             border-radius: 4px;
-            box-shadow: inset 0 0 80px rgba(0,0,0,0.02), 5px 5px 15px rgba(0,0,0,0.05);
+            box-shadow: 2px 2px 15px rgba(0,0,0,0.05);
             overflow: hidden;
-            /* 纸张纹理叠加 */
             background-image: url('https://www.transparenttextures.com/patterns/natural-paper.png');
         }
 
-        /* 侧边索引标签 */
-        .sidebar-tabs {
-            width: 60px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            padding-top: 60px;
-            margin-left: 10px;
-        }
-
-        .tab-item {
-            width: 80px;
-            height: 100px;
-            writing-mode: vertical-rl;
-            text-align: center;
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 2px;
-            color: rgba(255,255,255,0.9);
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 0 10px 10px 0;
-            margin-left: -25px;
-            box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .tab-item:hover {
-            margin-left: -5px;
-            padding-right: 10px;
-        }
-
-        /* 第一页：回形针个人卡片 */
-        .id-clip-card {
+        /* 原色 ID 卡 */
+        .id-card {
             position: absolute;
-            top: 50px;
-            left: 50px;
-            width: 240px;
-            background: #fff;
-            padding: 12px;
-            box-shadow: 2px 15px 30px rgba(0,0,0,0.1);
-            transform: rotate(-1.5deg);
+            top: 30px;
+            left: 30px;
+            width: 140px; /* 缩小尺寸 */
+            background: white;
+            padding: 8px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            transform: rotate(-1deg);
             z-index: 10;
             border: 1px solid #eee;
         }
 
-        /* 模拟回形针 */
-        .id-clip-card::after {
+        /* 回形针 */
+        .id-card::after {
             content: "";
             position: absolute;
-            top: -20px;
-            left: 40px;
-            width: 18px;
-            height: 50px;
-            border: 3.5px solid #a1a1a1;
-            border-radius: 12px;
-            background: transparent;
+            top: -15px;
+            left: 30px;
+            width: 12px;
+            height: 40px;
+            border: 3px solid #b1b1b1;
+            border-radius: 10px;
             z-index: 12;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
         }
 
-        .profile-photo {
+        .profile-img {
             width: 100%;
-            height: 280px;
-            background: #f0f0f0;
+            height: 160px;
             object-fit: cover;
-            filter: grayscale(1) contrast(1.1) brightness(0.9); /* 调查档案风格黑白 */
-            margin-bottom: 12px;
             display: block;
+            margin-bottom: 6px;
+            /* 移除了黑白滤镜，保持原色 */
         }
 
-        .id-meta {
-            font-family: "Courier New", monospace;
+        .id-text {
+            font-size: 9px;
+            font-family: monospace;
+            text-transform: uppercase;
+            color: #666;
+        }
+
+        /* 侧边标签栏 */
+        .tabs {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-left: 10px;
+            padding-top: 50px;
+        }
+
+        .tab {
+            width: 65px;
+            height: 80px;
+            writing-mode: vertical-rl;
+            text-align: center;
             font-size: 11px;
-            line-height: 1.4;
-            color: #333;
+            font-weight: bold;
+            color: white;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-radius: 0 10px 10px 0;
+            transition: 0.4s ease;
+            margin-left: -25px;
+            display: flex;
+            align-items: center; justify-content: center;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
         }
 
-        /* 页面切换逻辑 */
-        .page-content {
+        .tab:hover { margin-left: -5px; }
+
+        /* 页面切换内容 */
+        .page {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            padding: 80px;
-            padding-left: 340px; /* 为左侧照片留出空间 */
+            top: 0; left: 0; width: 100%; height: 100%;
+            padding: 50px;
+            padding-left: 200px; /* 为ID卡留位 */
             box-sizing: border-box;
             opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+            transition: 0.6s;
             pointer-events: none;
         }
 
-        .page-content.active {
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: auto;
-        }
+        .page.active { opacity: 1; pointer-events: auto; }
 
-        /* 文本样式 */
-        .doc-header {
-            font-family: "Courier", monospace;
-            font-size: 13px;
-            color: #a0a0a0;
-            text-transform: uppercase;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 8px;
-            margin-bottom: 30px;
-            display: block;
-        }
+        h2 { font-size: 38px; margin: 0 0 15px 0; letter-spacing: -2px; }
+        p { font-size: 15px; line-height: 1.6; color: #333; max-width: 400px; }
 
-        h1 {
-            font-size: 52px;
-            font-weight: 800;
-            letter-spacing: -3px;
-            margin: 0 0 25px 0;
-            line-height: 1;
-            color: var(--ink-black);
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .archive-folder {
+                flex-direction: column;
+                height: 85vh;
+                transform: none !important; /* 手机端不倾斜 */
+                padding: 10px;
+            }
+            .tabs {
+                flex-direction: row;
+                margin-left: 0;
+                margin-top: 10px;
+                padding-top: 0;
+                justify-content: center;
+            }
+            .tab {
+                writing-mode: horizontal-tb;
+                width: auto;
+                height: 40px;
+                padding: 0 15px;
+                border-radius: 10px;
+                margin-left: 0;
+            }
+            .page { padding: 30px; padding-top: 180px; }
+            .id-card { width: 100px; top: 20px; left: 20px; }
+            .profile-img { height: 100px; }
         }
-
-        .description {
-            font-size: 17px;
-            line-height: 1.7;
-            color: #444;
-            max-width: 420px;
-        }
-
-        .redacted { /* 模拟图一中的黑杠涂抹效果 */
-            background: #000;
-            color: #000;
-            padding: 0 2px;
-        }
-
     </style>
 </head>
 <body>
 
-<div class="archive-folder">
-    <div class="paper-inner">
+<div class="archive-folder" id="folder">
+    <div class="paper-content">
         
-        <div id="page-0" class="page-content active">
-            <div class="id-clip-card">
-                <img src="me.jpg" class="profile-photo" alt="Subject Profile">
-                <div class="id-meta">
-                    <strong>FILE NO:</strong> ARCH-2026-04<br>
-                    <strong>SUBJECT:</strong> CONTENT STRATEGIST<br>
-                    <strong>STATUS:</strong> <span style="color:red">CLASSIFIED</span>
-                </div>
+        <div id="p1" class="page active">
+            <h2>Content<br>Creation</h2>
+            <p>基于视觉叙事的高端内容产出。我们通过图像和文字构建品牌的深度灵魂。</p>
+        </div>
+
+        <div id="p2" class="page">
+            <h2>Strategy &<br>Storytelling</h2>
+            <p>逻辑优先。在复杂的媒介环境中通过结构化叙事确保品牌信息的一致传递。</p>
+        </div>
+
+        <div id="p3" class="page">
+            <h2>Distribution<br>& PR</h2>
+            <p>打破算法黑盒，精准定位受众，让好的故事获得应有的回响。</p>
+        </div>
+
+        <div id="p4" class="page">
+            <h2>Scrapbook</h2>
+            <p>日常灵感、摄影记录与那些未完成的实验性创作。</p>
+        </div>
+
+        <div id="p5" class="page">
+            <div class="id-card">
+                <img src="me.jpg" class="profile-img" alt="Me">
+                <div class="id-text">No: 2026-X<br>Role: Strategist</div>
             </div>
-            
-            <div class="text-area">
-                <span class="doc-header">Personal Dossier // 00</span>
-                <h1>Archive<br>Owner.</h1>
-                <p class="description">
-                    专注于探索叙事边界与媒介策略。在这个数字化过载的时代，我致力于寻找那些被 <span class="redacted">隐藏</span> 的逻辑关系。
-                    <br><br>
-                    目前深耕于数字内容分发与品牌叙事构建。
-                </p>
-            </div>
-        </div>
-
-        <div id="page-1" class="page-content" style="padding-left: 80px;">
-            <span class="doc-header">Creative Department // 01</span>
-            <h1>Content<br>Creation</h1>
-            <p class="description">从视觉美学到叙事脚本的闭环产出。拒绝平庸的视觉堆砌，主张每一帧都应具备品牌深度。</p>
-        </div>
-
-        <div id="page-2" class="page-content" style="padding-left: 80px;">
-            <span class="doc-header">Strategic Logic // 02</span>
-            <h1>Strategy &<br>Storytelling</h1>
-            <p class="description">基于数据与社会学观察的内容建模。用逻辑理顺感性，让每一次表达都具有指向性。</p>
-        </div>
-
-        <div id="page-3" class="page-content" style="padding-left: 80px;">
-            <span class="doc-header">Amplification // 03</span>
-            <h1>Distribution<br>& PR</h1>
-            <p class="description">在算法丛林中寻找最短传播路径。不止于发布，更在于引发共鸣与文化回响。</p>
-        </div>
-
-        <div id="page-4" class="page-content" style="padding-left: 80px;">
-            <span class="doc-header">Random Access // 04</span>
-            <h1>Scrapbook</h1>
-            <p class="description">非线性的思考碎片。包括未完成的实验、摄影笔记以及对 <span class="redacted">未来技术</span> 的一些担忧。</p>
+            <h2>About<br>Myself</h2>
+            <p>我是 [你的名字]，一名穿梭于逻辑与创意之间的内容策略人。我喜欢在旧纸张的质感中寻找未来的数字解法。</p>
         </div>
 
     </div>
 
-    <div class="sidebar-tabs">
-        <div class="tab-item" style="background: var(--tab-color-0);" onclick="showPage(0)">Profile</div>
-        <div class="tab-item" style="background: var(--tab-color-1);" onclick="showPage(1)">Creative</div>
-        <div class="tab-item" style="background: var(--tab-color-2);" onclick="showPage(2)">Strategy</div>
-        <div class="tab-item" style="background: var(--tab-color-3);" onclick="showPage(3)">Distro</div>
-        <div class="tab-item" style="background: var(--tab-color-4);" onclick="showPage(4)">Archive</div>
+    <div class="tabs">
+        <div class="tab" style="background:var(--tab-1)" onclick="show(1)">Creation</div>
+        <div class="tab" style="background:var(--tab-2)" onclick="show(2)">Strategy</div>
+        <div class="tab" style="background:var(--tab-3)" onclick="show(3)">Distro</div>
+        <div class="tab" style="background:var(--tab-4)" onclick="show(4)">Scraps</div>
+        <div class="tab" style="background:var(--tab-5)" onclick="show(5)">About</div>
     </div>
 </div>
 
 <script>
-    function showPage(index) {
-        // 平滑切换页面
-        document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
-        document.getElementById('page-' + index).classList.add('active');
+    function show(idx) {
+        // 激活平铺展开效果
+        document.getElementById('folder').classList.add('active');
         
-        // 模拟档案翻动的小细节：每次点击可以增加一点随机的轻微位移
-        const paper = document.querySelector('.paper-inner');
-        paper.style.transform = `scale(0.995)`;
-        setTimeout(() => paper.style.transform = `scale(1)`, 150);
+        // 切换页面
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('p' + idx).classList.add('active');
     }
 </script>
 
