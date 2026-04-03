@@ -3,172 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lydia Yang | Project File</title>
+    <title>Lydia Yang | Archive System</title>
     <style>
         :root {
-            --bg-table: #a1a1a1; /* 工业水泥桌面色 */
-            --folder-cover: rgba(228, 228, 222, 0.9); /* 磨砂羊皮纸色 */
-            --paper-white: #fdfdfd;
-            --ink: #2a2a2a;
-            --accent: #d2d2cd;
+            --bg: #1a1a1b; /* 视频中的深色背景 */
+            --folder-tan: #e4e4de; /* 封面磨砂色 */
+            --paper: #fdfdfd;
+            /* 视频中的彩色标签系统 */
+            --c-red: #d9534f; --c-blue: #4a90e2; --c-green: #5cb85c; --c-yellow: #f0ad4e; --c-purple: #8e44ad;
+            --bezier: cubic-bezier(0.23, 1, 0.32, 1); /* Apple 标准丝滑曲线 */
         }
 
         body {
-            background-color: var(--bg-table);
+            background-color: var(--bg);
             margin: 0; display: flex; justify-content: center; align-items: center;
-            min-height: 100vh; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            perspective: 2000px; overflow: hidden;
+            height: 100vh; font-family: "Helvetica Neue", Helvetica, sans-serif;
+            overflow: hidden; color: white;
         }
 
-        /* 档案袋主容器 */
-        .archive-folder {
+        /* 档案系统主容器 */
+        .archive-system {
             position: relative;
-            width: 90%; max-width: 850px; height: 600px;
-            cursor: pointer;
-            transition: transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
-            transform-style: preserve-3d;
+            width: 90%; max-width: 1000px; height: 650px;
+            perspective: 2000px;
         }
 
-        /* 状态控制：摊开 */
-        .archive-folder.open {
-            transform: rotateX(0deg) rotateY(0deg) scale(1.05);
-        }
-
-        /* 封面 (封面是半透磨砂层) */
-        .folder-front {
+        /* --- 封面部分 --- */
+        .folder-cover {
             position: absolute; inset: 0;
-            background: var(--folder-cover);
-            backdrop-filter: blur(5px);
-            border-radius: 4px 15px 15px 4px;
-            z-index: 10;
+            background: var(--folder-tan);
+            border-radius: 4px 20px 20px 4px;
+            z-index: 100;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            box-shadow: 10px 20px 40px rgba(0,0,0,0.15);
-            transition: transform 1s ease, opacity 0.8s ease;
+            color: #2a2a2a; transition: all 1s var(--bezier);
             transform-origin: left;
-            border-left: 20px solid rgba(0,0,0,0.03); /* 模拟侧边折痕 */
+            box-shadow: 20px 20px 60px rgba(0,0,0,0.5);
+        }
+        .folder-cover.open {
+            transform: rotateY(-115deg);
+            opacity: 0; pointer-events: none;
+        }
+        .cover-title { font-size: 32px; font-weight: 900; letter-spacing: 4px; }
+        .cover-sub { font-size: 14px; font-weight: 700; opacity: 0.6; margin-top: 10px; }
+
+        /* --- 视频同款彩色导航区 --- */
+        .nav-grid {
+            position: absolute; top: 80px; left: 0; width: 100%;
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            gap: 10px; padding: 20px; box-sizing: border-box;
+            transition: transform 0.8s var(--bezier);
+            z-index: 50;
+        }
+        /* 当内容打开时，导航整体上移并缩小 */
+        .archive-system.content-open .nav-grid {
+            transform: translateY(-120px) scale(0.95);
         }
 
-        .archive-folder.open .folder-front {
-            transform: rotateY(-110deg); /* 翻开动作 */
-            opacity: 0.1;
-            pointer-events: none;
+        .nav-item {
+            height: 60px; border-radius: 4px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 800; cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-transform: uppercase; letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
+        .nav-item:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
 
-        /* 封面文字排版 (完全复刻 Marc Jacobs) */
-        .brand-logo { font-size: 28px; font-weight: 900; letter-spacing: 2px; margin-bottom: 2px; }
-        .brand-sub { font-size: 14px; font-weight: 700; letter-spacing: 1px; margin-bottom: 40px; }
-        .footer-label { position: absolute; bottom: 40px; font-size: 10px; letter-spacing: 2px; color: #666; }
-
-        /* 金属长尾夹 (Binder Clip) */
-        .binder-clip {
-            position: absolute; right: -20px; top: 50%; transform: translateY(-50%);
-            width: 50px; height: 40px; background: #333;
-            border-radius: 3px; z-index: 15;
-            box-shadow: 2px 5px 10px rgba(0,0,0,0.3);
-        }
-        .binder-clip::before { /* 夹子的金属提手 */
-            content: ""; position: absolute; left: -25px; top: 10px;
-            width: 35px; height: 20px; border: 3px solid #ccc;
-            border-radius: 50% 0 0 50%;
-        }
-
-        /* 内部纸张内容 */
-        .paper-stack {
-            position: absolute; inset: 10px;
-            background: var(--paper-white);
-            box-shadow: 2px 2px 10px rgba(0,0,0,0.05);
-            border-radius: 2px;
-            padding: 60px;
+        /* --- 内容纸张区 --- */
+        .content-viewer {
+            position: absolute; top: 180px; left: 20px; right: 20px; bottom: 20px;
+            background: var(--paper); border-radius: 8px;
+            color: #1a1a1a; padding: 60px; box-sizing: border-box;
+            transform: translateY(100px); opacity: 0;
+            transition: all 0.8s var(--bezier);
             background-image: url('https://www.transparenttextures.com/patterns/natural-paper.png');
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+        }
+        .archive-system.content-open .content-viewer {
+            transform: translateY(0); opacity: 1;
         }
 
-        /* 页面切换逻辑 */
-        .file-page {
-            position: absolute; inset: 60px;
-            opacity: 0; transition: 0.5s ease; pointer-events: none;
+        /* 内容细节 */
+        .file-header { font-family: monospace; font-size: 12px; color: #999; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 30px; }
+        .file-body h2 { font-size: 42px; margin: 0; letter-spacing: -2px; }
+        .file-body p { line-height: 1.8; opacity: 0.8; max-width: 500px; }
+        
+        .id-clip {
+            position: absolute; top: 60px; right: 60px; width: 140px;
+            background: white; padding: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transform: rotate(3deg); border: 1px solid #ddd;
         }
-        .file-page.active { opacity: 1; pointer-events: auto; }
+        .id-clip img { width: 100%; grayscale: 0; }
 
-        .file-page h1 { font-size: 40px; font-weight: 800; letter-spacing: -2px; margin-top: 0; }
-        .file-page p { font-size: 16px; line-height: 1.8; color: #444; max-width: 450px; }
-
-        /* 侧边索引标签 (摊开后可见) */
-        .side-tabs {
-            position: absolute; right: -60px; top: 80px;
-            display: flex; flex-direction: column; gap: 10px;
-            opacity: 0; transition: 1s ease;
+        /* 返回按钮 */
+        .back-btn {
+            position: absolute; top: 20px; left: 20px; color: white;
+            font-size: 12px; cursor: pointer; opacity: 0; transition: 0.5s;
         }
-        .archive-folder.open .side-tabs { opacity: 1; }
-
-        .tab {
-            width: 80px; height: 40px; background: #e0e0e0;
-            font-size: 10px; font-weight: bold; display: flex; align-items: center;
-            padding-left: 15px; border-radius: 0 5px 5px 0;
-            cursor: pointer; transition: 0.3s;
-        }
-        .tab:hover { background: #333; color: white; transform: translateX(5px); }
-
-        /* ID照片 (About页) */
-        .id-photo {
-            width: 150px; height: 200px; object-fit: cover;
-            border: 5px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            float: left; margin-right: 30px; margin-bottom: 20px;
-        }
+        .archive-system.content-open .back-btn { opacity: 0.5; }
+        .back-btn:hover { opacity: 1; }
 
     </style>
 </head>
 <body>
 
-<div class="archive-folder" id="mainFolder" onclick="openFolder()">
+<div class="archive-system" id="sys">
     
-    <div class="folder-front">
-        <div class="binder-clip"></div>
-        <div class="brand-logo">LYDIA YANG</div>
-        <div class="brand-sub">CONTENT STRATEGIST</div>
-        <div class="footer-label">DESIGN & STRATEGY - PROJECT FILE © 2026</div>
+    <div class="back-btn" onclick="closeFile()">← BACK TO INDEX</div>
+
+    <div class="folder-cover" id="cover" onclick="openFolder()">
+        <div class="cover-title">LYDIA YANG</div>
+        <div class="cover-sub">CONTENT STRATEGIST / PROJECT FILE</div>
+        <div style="position:absolute; bottom:40px; font-size:10px; opacity:0.4;">© 2026 CLASSIFIED ARCHIVE</div>
     </div>
 
-    <div class="paper-stack">
+    <div class="nav-grid">
+        <div class="nav-item" style="background:var(--c-red)" onclick="openFile('CREATIVE')">Creative</div>
+        <div class="nav-item" style="background:var(--c-blue)" onclick="openFile('STRATEGY')">Strategy</div>
+        <div class="nav-item" style="background:var(--c-green)" onclick="openFile('DISTRO')">Distro</div>
+        <div class="nav-item" style="background:var(--c-purple)" onclick="openFile('ABOUT')">About</div>
+    </div>
+
+    <div class="content-viewer" id="viewer">
+        <div class="file-header">DOCUMENT_REF: <span id="ref-id">NULL</span></div>
+        <div class="file-body">
+            <h2 id="file-title">Section Title</h2>
+            <p id="file-desc">内容加载中...</p>
+        </div>
         
-        <div id="file-1" class="file-page active">
-            <h1>01. Content<br>Creation</h1>
-            <p>从品牌调性出发，构建具有长期生命力的内容资产。我们不追逐热点，我们制造经典。</p>
+        <div class="id-clip" id="id-card" style="display:none;">
+            <img src="me.jpg" alt="Lydia">
+            <div style="font-size:9px; font-family:monospace; margin-top:5px;">SUBJECT: LYDIA YANG</div>
         </div>
-
-        <div id="file-2" class="file-page">
-            <h1>02. Strategy<br>& Logic</h1>
-            <p>逻辑是叙事的底座。通过深入的数据挖掘与受众心理分析，建立无法被替代的竞争优势。</p>
-        </div>
-
-        <div id="file-3" class="file-page">
-            <h1>03. About<br>Lydia</h1>
-            <img src="me.jpg" class="id-photo" alt="Lydia">
-            <p>
-                <strong>Lydia Yang</strong><br>
-                Content Strategist / Narrative Designer<br><br>
-                致力于在冷峻的工业美学与温暖的人类叙事之间寻找平衡。
-            </p>
-        </div>
-
-    </div>
-
-    <div class="side-tabs">
-        <div class="tab" onclick="event.stopPropagation(); showFile(1)">CREATIVE</div>
-        <div class="tab" onclick="event.stopPropagation(); showFile(2)">LOGIC</div>
-        <div class="tab" onclick="event.stopPropagation(); showFile(3)">ABOUT</div>
     </div>
 
 </div>
 
 <script>
+    const data = {
+        'CREATIVE': { title: 'Visual<br>Production', desc: '基于工业美学的内容生产逻辑。我们关注每一个像素的叙事能力，确保视觉语言与品牌战略高度对齐。', ref: 'CR-001' },
+        'STRATEGY': { title: 'Narrative<br>Architecture', desc: '逻辑是创意的骨架。通过深度调研与竞品解构，为品牌量身定制具有攻击性的叙事策略。', ref: 'ST-042' },
+        'DISTRO': { title: 'Media<br>Amplification', desc: '算法时代的精准打击。利用多渠道分发矩阵，确保内容在对的时间出现在对的人面前。', ref: 'DI-009' },
+        'ABOUT': { title: 'Lydia<br>Yang', desc: 'Lydia 是一位专注于内容策略与数字化叙事的工程师。她喜欢在冷峻的工业质感中寻找人类情感的共鸣点。', ref: 'ID-777' }
+    };
+
     function openFolder() {
-        document.getElementById('mainFolder').classList.add('open');
+        document.getElementById('cover').classList.add('open');
     }
 
-    function showFile(idx) {
-        // 切换纸张
-        document.querySelectorAll('.file-page').forEach(p => p.classList.remove('active'));
-        document.getElementById('file-' + idx).classList.add('active');
+    function openFile(type) {
+        const sys = document.getElementById('sys');
+        const card = document.getElementById('id-card');
+        
+        // 1. 触发整体位移动效
+        sys.classList.add('content-open');
+        
+        // 2. 填充内容
+        document.getElementById('ref-id').innerText = data[type].ref;
+        document.getElementById('file-title').innerHTML = data[type].title;
+        document.getElementById('file-desc').innerText = data[type].desc;
+        
+        // 3. 特殊处理About页的照片
+        card.style.display = (type === 'ABOUT') ? 'block' : 'none';
+    }
+
+    function closeFile() {
+        document.getElementById('sys').classList.remove('content-open');
     }
 </script>
 
