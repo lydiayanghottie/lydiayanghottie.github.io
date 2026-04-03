@@ -3,86 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lydia Yang</title>
+    <title>LYDIA'S RADIANT RIDE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
-        /* 宝蓝色背景 */
-        body { 
-            margin: 0; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            height: 100vh; 
-            background-color: #0047AB; 
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            overflow: hidden;
+        :root {
+            --neon-pink: #ff00ff;
+            --neon-blue: #00ffff;
+            --sun-orange: #ff8c00;
         }
 
-        .container {
-            text-align: center;
+        body {
+            margin: 0; padding: 0;
+            background: #050505;
+            color: white;
+            font-family: 'Press Start 2P', cursive;
+            display: flex; flex-direction: column; align-items: center;
+            height: 100vh; overflow: hidden;
+            /* CRT 扫描线滤镜效果 */
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 4px, 3px 100%;
+        }
+
+        /* 复古赛博太阳 */
+        .sun {
+            position: fixed;
+            top: 15%;
+            width: 300px; height: 300px;
+            background: linear-gradient(var(--sun-orange) 0%, #ff0055 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 80px #ff0055;
+            -webkit-mask-image: linear-gradient(to bottom, 
+                black 0%, black 70%, 
+                transparent 72%, transparent 75%, 
+                black 77%, black 85%, 
+                transparent 87%, transparent 92%, 
+                black 94%, black 100%);
+            z-index: -2;
+        }
+
+        /* 动态网格 */
+        .grid {
+            position: fixed; bottom: 0; width: 100%; height: 50%;
+            background-image: 
+                linear-gradient(transparent 0%, var(--neon-pink) 1%, transparent 2%),
+                linear-gradient(90deg, transparent 0%, var(--neon-pink) 1%, transparent 2%);
+            background-size: 50px 50px;
+            transform: perspective(300px) rotateX(60deg);
+            animation: move-grid 1.5s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes move-grid {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 50px; }
+        }
+
+        .header {
+            margin-top: 80px; text-align: center;
+            font-size: 1.2rem;
+            text-shadow: 4px 4px var(--neon-pink);
+            z-index: 10;
+        }
+
+        .menu-container {
+            margin-top: 40px; z-index: 10;
+            width: 80%; max-width: 500px;
+        }
+
+        .menu-item {
+            padding: 12px; margin: 10px 0;
+            border: 2px solid var(--neon-blue);
+            background: rgba(0, 0, 0, 0.8);
+            cursor: pointer; text-decoration: none;
+            color: white; display: block; font-size: 0.6rem;
+            transition: 0.2s;
+            box-shadow: 0 0 5px var(--neon-blue);
+        }
+
+        .menu-item:hover {
+            background: var(--neon-pink);
+            box-shadow: 0 0 30px var(--neon-pink);
+            transform: translateX(15px);
             color: white;
         }
 
-        .greeting-box {
-            font-size: 3rem;
-            font-weight: bold;
-            height: 80px; 
-        }
-
-        /* 动画效果 */
-        .fade-in-out {
-            animation: fadeInOut 3s infinite;
-        }
-
-        @keyframes fadeInOut {
-            0% { opacity: 0; transform: translateY(10px); }
-            20% { opacity: 1; transform: translateY(0); }
-            80% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-10px); }
-        }
-
-        .name {
-            font-size: 1.5rem;
-            margin-top: 20px;
-            letter-spacing: 2px;
-            opacity: 0.9;
-        }
-
-        /* 照片样式：圆形且带一点白边 */
-        .profile-pic {
-            width: 180px;
-            height: 180px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            margin: 20px 0;
+        .footer {
+            position: fixed; bottom: 10px;
+            font-size: 0.4rem; color: var(--neon-pink);
+            letter-spacing: 1px;
         }
     </style>
 </head>
 <body>
-
-    <div class="container">
-        <div id="greeting" class="greeting-box">你好</div>
-        
-        <img src="me.jpg" class="profile-pic" alt="Lydia Yang">
-
-        <div class="name">我是 Lydia Yang</div>
+    <div class="sun"></div>
+    <div class="grid"></div>
+    
+    <div class="header">
+        LYDIA YANG<br>
+        <span style="font-size: 0.6rem; color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue);">LEVEL: CONTENT STRATEGIST</span>
     </div>
 
-    <script>
-        const greetings = ["你好", "Hello", "Bonjour"];
-        let currentIndex = 0;
-        const greetingElement = document.getElementById("greeting");
+    <div class="menu-container">
+        <a href="#" class="menu-item">> 1. CONTENT CREATION</a>
+        <a href="#" class="menu-item">> 2. STRATEGY & STORY</a>
+        <a href="#" class="menu-item">> 3. DISTRIBUTION</a>
+        <a href="#" class="menu-item">> 4. PHOTO SCRAPBOOK</a>
+        <a href="#" class="menu-item">> 5. ABOUT THE DRIVER</a>
+    </div>
 
-        function updateGreeting() {
-            greetingElement.textContent = greetings[currentIndex];
-            greetingElement.classList.remove("fade-in-out");
-            void greetingElement.offsetWidth; 
-            greetingElement.classList.add("fade-in-out");
-            currentIndex = (currentIndex + 1) % greetings.length;
-        }
-
-        setInterval(updateGreeting, 3000);
-        updateGreeting(); 
-    </script>
+    <div class="footer">INSERT COIN TO START YOUR JOURNEY</div>
 </body>
 </html>
