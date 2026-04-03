@@ -1,194 +1,262 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LYDIA YANG // OPEN_ARCHIVE_1998</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archive Fragments | 档案实验室</title>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #c5c5c1; 
-            --paper: #ffffff;
-            --glass: rgba(255, 255, 255, 0.35);
-            --orange: #FF5722;
-            --curve: cubic-bezier(0.16, 1, 0.3, 1);
+            --bg-dark: #121212;
+            --tab-height: 48px;
+            --transition-speed: 0.7s;
+            --bezier: cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
-        body { background-color: var(--bg); margin: 0; overflow: hidden; height: 100dvh; font-family: 'Inter', sans-serif; }
-
-        /* 交互区 */
-        .click-zone { position: fixed; top: 0; bottom: 0; z-index: 5000; width: 30%; }
-        .next { right: 0; } .prev { left: 0; }
-
-        .stage { position: relative; width: 100%; height: 100dvh; display: flex; align-items: center; justify-content: center; perspective: 3000px; }
-
-        /* --- 3D 书籍容器 (整体水平位移以保持居中感) --- */
-        .book-container {
-            position: relative; width: 450px; height: 80vh; /* 宽度设为单页宽 */
-            transform-style: preserve-3d; transition: transform 1.2s var(--curve);
-            transform: translateX(0px); /* 封面态居中 */
-        }
-        .book-container.is-open { transform: translateX(225px); } /* 展开后向右平移一半宽度，视觉居中 */
-
-        /* --- 封底 (摊开后的底座) --- */
-        .v8-back {
-            position: absolute; inset: 0; z-index: 5;
-            background: var(--glass);
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.015' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.2'/%3E%3C/svg%3E");
-            backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
-            border: 1px solid rgba(255,255,255,0.4); border-radius: 4px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* --- 左右页面系统 --- */
-        .page {
-            position: absolute; inset: 0; background: var(--paper);
-            padding: 60px 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            transition: transform 1.2s var(--curve), opacity 0.6s;
-            transform-origin: left center; backface-visibility: hidden;
+        body {
+            background-color: var(--bg-dark);
+            font-family: 'EB Garamond', serif;
+            color: #e0e0e0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* 左页：向左翻转 180 度 */
-        .page-left {
-            z-index: 20; transform: rotateY(0deg); opacity: 0;
-            border-right: 1px solid rgba(0,0,0,0.05);
-        }
-        .is-open .page-left { transform: rotateY(-180deg); opacity: 1; }
-
-        /* 右页：保持原位或轻微偏移 */
-        .page-right { z-index: 10; opacity: 0; }
-        .is-open .page-right { opacity: 1; }
-
-        /* 书脊阴影线 */
-        .spine-shadow {
-            position: absolute; left: 0; top: 0; bottom: 0; width: 30px;
-            background: linear-gradient(90deg, rgba(0,0,0,0.08), transparent);
-            z-index: 50; pointer-events: none;
+        /* 顶部导航 */
+        header {
+            padding: 25px 50px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.6;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
 
-        /* --- 封面 (V8 质感) --- */
-        .front-cover {
-            position: absolute; inset: 0; z-index: 1000;
-            background: var(--glass);
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.015' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.2'/%3E%3C/svg%3E");
-            backdrop-filter: blur(35px); -webkit-backdrop-filter: blur(35px);
-            border: 1px solid rgba(255,255,255,0.5);
-            transform-origin: left center; transition: 1.4s var(--curve);
-            display: flex; align-items: center; justify-content: center;
-        }
-        .front-cover.open { transform: rotateY(-180deg); opacity: 0; pointer-events: none; }
-
-        .cover-plate {
-            background: #fff; padding: 25px 60px; font-size: 60px; font-weight: 900;
-            color: var(--orange); letter-spacing: -3px; box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+        /* 档案总容器 */
+        .archive-container {
+            position: relative;
+            flex-grow: 1;
+            margin-top: 10px;
+            perspective: 1000px; /* 增加一点空间深度感 */
         }
 
-        /* 书签导航 - 移至右页边缘 */
-        .tabs-nav {
-            position: absolute; left: 100%; top: 100px; z-index: 2000;
-            display: flex; flex-direction: column; gap: 6px;
+        /* 单个文件夹层级 */
+        .folder-layer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            left: 0;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+            /* 关键：分两段处理动画，位移快，层级切换稍慢 */
+            transition: transform var(--transition-speed) var(--bezier), 
+                        z-index 0s linear 0.3s;
+            will-change: transform;
         }
+
+        /* 标签设计 */
         .tab {
-            width: 80px; height: 32px; background: rgba(0,0,0,0.05);
-            font-size: 9px; font-weight: 900; display: flex; align-items: center; 
-            padding-left: 10px; border-radius: 0 4px 4px 0; color: #888;
-            backdrop-filter: blur(10px); transition: 0.4s var(--curve); cursor: pointer;
+            height: var(--tab-height);
+            padding: 0 30px;
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 12px 12px 0 0;
+            width: fit-content;
+            transition: all 0.4s var(--bezier);
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.3);
+            user-select: none;
+            position: relative;
+            z-index: 10;
         }
-        .tab.active { background: #000; color: #fff; width: 110px; }
 
-        /* 内容样式 (左页放标题，右页放描述) */
-        .p-idx { font-size: 10px; font-weight: 900; opacity: 0.2; letter-spacing: 3px; margin-bottom: 20px; }
-        .p-title { font-size: 55px; font-weight: 900; letter-spacing: -3px; line-height: 0.85; margin: 0; transform: scaleX(-1); text-align: right;} /* 左页翻转了，文字需要反向镜像回来 */
-        .p-desc { font-size: 16px; line-height: 1.6; color: #333; margin-top: 20px; }
-
-        @media (max-width: 768px) {
-            .book-container { width: 85vw; }
-            .book-container.is-open { transform: translateX(0) scale(0.8); } /* 手机端摊开太宽，建议缩小或保持单页感 */
-            .p-title { font-size: 35px; }
-            .tabs-nav { left: auto; right: 0; bottom: 20px; top: auto; flex-direction: row; transform: translateY(50px); }
+        /* 内容区设计 */
+        .content {
+            flex-grow: 1;
+            padding: 80px 10%;
+            position: relative;
+            box-shadow: 0 -15px 40px rgba(0,0,0,0.5);
+            overflow-y: auto;
+            border-top: 1px solid rgba(255,255,255,0.1);
         }
+
+        /* --- 激活状态的核心交互 --- */
+
+        .folder-layer.active {
+            z-index: 100 !important;
+            transform: translateY(0) !important; /* 抽到最顶部 */
+            transition: transform var(--transition-speed) var(--bezier), z-index 0s;
+        }
+
+        /* 激活时标签移向右侧（原视频精髓） */
+        .folder-layer.active .tab {
+            position: absolute;
+            right: 0;
+            top: 120px;
+            writing-mode: vertical-rl;
+            height: 200px;
+            padding: 20px 12px;
+            border-radius: 15px 0 0 15px;
+            font-size: 20px;
+            transform: translateX(0);
+            box-shadow: -10px 0 30px rgba(0,0,0,0.3);
+            animation: tab-pop 0.5s var(--bezier) forwards;
+        }
+
+        @keyframes tab-pop {
+            from { transform: translateX(50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* --- 配色方案 (精确匹配视频质感) --- */
+        #layer1 .tab, #layer1 .content { background-color: #6a4c93; } /* 紫 */
+        #layer2 .tab, #layer2 .content { background-color: #1982c4; } /* 蓝 */
+        #layer3 .tab, #layer3 .content { background-color: #8ac926; } /* 绿 */
+        #layer4 .tab, #layer4 .content { background-color: #ff595e; } /* 红 */
+        #layer5 .tab, #layer5 .content { background-color: #ffca3a; color: #333; } /* 黄 */
+
+        /* 内部文档装饰 */
+        .doc-wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+            animation: fade-in 1s ease;
+        }
+
+        .receipt-style {
+            background: #f4f1de;
+            color: #333;
+            padding: 25px;
+            width: 280px;
+            transform: rotate(-3deg);
+            box-shadow: 10px 10px 30px rgba(0,0,0,0.4);
+            margin-bottom: 40px;
+            font-family: monospace;
+            border-bottom: 2px dashed #ccc;
+        }
+
+        h1 { font-size: 80px; margin-bottom: 30px; font-weight: 400; letter-spacing: -2px; }
+        p { font-size: 24px; line-height: 1.5; max-width: 650px; opacity: 0.8; margin-bottom: 20px; }
+
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 自定义滚动条 */
+        .content::-webkit-scrollbar { width: 6px; }
+        .content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
     </style>
 </head>
 <body>
 
-<div class="click-zone prev" onclick="go(-1)"></div>
-<div class="click-zone next" onclick="go(1)"></div>
+    <header>
+        <div>Unindexed Materials / Recovered Entries</div>
+        <div>Fragment 15&mdash;20</div>
+        <div>Sign Up</div>
+    </header>
 
-<div class="stage">
-    <div class="book-container" id="book">
+    <div class="archive-container" id="container">
         
-        <div class="v8-back"></div>
-
-        <div class="page page-left" id="page-l">
-            <div class="p-title" id="ui-title">SYSTEM</div>
-            <div style="position:absolute; bottom:40px; right:40px; opacity:0.1; font-weight:900; transform:scaleX(-1);">V8_ARCHIVE</div>
+        <div class="folder-layer" id="layer1" style="--idx: 0">
+            <div class="tab">Lexical Interruptions</div>
+            <div class="content">
+                <div class="doc-wrapper">
+                    <h1>Unverified</h1>
+                    <div class="receipt-style">
+                        FILE #002 <br>
+                        RECEIPT: 1966-MAR-12 <br>
+                        STATUS: PENDING...
+                    </div>
+                    <p>这里有明显的注释迹象。某些段落的缺失，暗示了有人曾试图掩盖文本的原始意图。</p>
+                </div>
+            </div>
         </div>
 
-        <div class="page page-right" id="page-r">
-            <div class="spine-shadow"></div>
-            <div class="p-idx" id="ui-idx">INDEX / 01</div>
-            <div class="p-desc" id="ui-desc">...</div>
+        <div class="folder-layer" id="layer2" style="--idx: 1">
+            <div class="tab">Concord Variants</div>
+            <div class="content">
+                <div class="doc-wrapper">
+                    <h1>Variant A</h1>
+                    <p>在所有已知的变量中，17B 是最不稳定的。它拒绝被归类，拒绝被读取。</p>
+                </div>
+            </div>
         </div>
 
-        <nav class="tabs-nav">
-            <div class="tab" onclick="jump(1)">01_CREATION</div>
-            <div class="tab" onclick="jump(2)">02_STRATEGY</div>
-            <div class="tab" onclick="jump(3)">03_DISTRO</div>
-            <div class="tab" onclick="jump(4)">04_SCRAPBOOK</div>
-            <div class="tab" onclick="jump(5)">05_PROFILE</div>
-        </nav>
+        <div class="folder-layer" id="layer3" style="--idx: 2">
+            <div class="tab">Unanchored Statements</div>
+            <div class="content">
+                <div class="doc-wrapper">
+                    <h1>Silence</h1>
+                    <p>当所有的声音被移除，剩下的只有这份文档。它不代表真相，只代表存在过。</p>
+                </div>
+            </div>
+        </div>
 
-        <div class="front-cover" id="cover">
-            <div class="cover-plate">Works</div>
-            <div style="position:absolute; bottom:40px; font-size:9px; letter-spacing:4px; font-weight:700; opacity:0.4;">[ 1998_SERIES_V8 ]</div>
+        <div class="folder-layer" id="layer4" style="--idx: 3">
+            <div class="tab">Varnell Collection</div>
+            <div class="content">
+                <div class="doc-wrapper">
+                    <h1>Fragment 17B</h1>
+                    <p>这是原视频中展示的红色核心区域。注意右侧标签的平滑切换动效。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="folder-layer active" id="layer5" style="--idx: 4">
+            <div class="tab">Margin Events</div>
+            <div class="content">
+                <div class="doc-wrapper">
+                    <h1>The Edge</h1>
+                    <p>默认选中的起始页。点击上方任意彩色标签尝试切换档案。</p>
+                </div>
+            </div>
         </div>
 
     </div>
-</div>
 
-<script>
-    let step = 0;
-    const data = [
-        {},
-        { i: "INDEX / 01", t: "CONTENT<br>CREATION", d: "Experimental archival aesthetics. High-fidelity visual logic meets industrial minimalism." },
-        { i: "INDEX / 02", t: "STRATEGIC<br>LOGIC", d: "Engineering narratives that stick. Defining the intersection of technical rigor and creative intuition." },
-        { i: "INDEX / 03", t: "GLOBAL<br>DISTRO", d: "Strategic signal optimization across fragmented networks. Calibrating resonance in the modern era." },
-        { i: "INDEX / 04", t: "THE<br>SCRAPBOOK", d: "Raw insights and tactical prototypes. The unfiltered engine room of digital development." },
-        { i: "INDEX / 05", t: "IDENTITY<br>PROFILE", d: "Lydia Yang. Content Strategist. Established 1998. Driven by the logic of the perfect blur." }
-    ];
+    <script>
+        const layers = document.querySelectorAll('.folder-layer');
+        const tabHeight = 48; // 对应 CSS 中的 --tab-height
 
-    function jump(n) { event.stopPropagation(); step = n; render(); }
-    function go(dir) { step = Math.max(0, Math.min(6, step + dir)); render(); }
-
-    function render() {
-        const book = document.getElementById('book');
-        const cv = document.getElementById('cover');
-        const tabs = document.querySelectorAll('.tab');
-
-        if (step === 0) {
-            book.classList.remove('is-open');
-            cv.classList.remove('open');
-        } else if (step === 6) {
-            // 封底态
-            book.classList.add('is-open');
-            cv.classList.add('open');
-            document.getElementById('page-l').style.opacity = "0";
-            document.getElementById('page-r').style.opacity = "0";
-        } else {
-            book.classList.add('is-open');
-            cv.classList.add('open');
-            document.getElementById('page-l').style.opacity = "1";
-            document.getElementById('page-r').style.opacity = "1";
-
-            const p = data[step];
-            document.getElementById('ui-title').innerHTML = p.t;
-            document.getElementById('ui-idx').innerText = p.i;
-            document.getElementById('ui-desc').innerText = p.d;
-
-            tabs.forEach((t, i) => t.classList.toggle('active', i + 1 === step));
+        function updatePositions() {
+            layers.forEach((layer) => {
+                if (!layer.classList.contains('active')) {
+                    // 计算非激活层的堆叠位置
+                    const idx = layer.getAttribute('style').match(/--idx: (\d+)/)[1];
+                    layer.style.transform = `translateY(${idx * tabHeight}px)`;
+                }
+            });
         }
-    }
-</script>
 
+        // 初始化位置
+        updatePositions();
+
+        layers.forEach((layer) => {
+            const tab = layer.querySelector('.tab');
+            tab.addEventListener('click', () => {
+                if (layer.classList.contains('active')) return;
+
+                // 切换激活状态
+                layers.forEach(l => l.classList.remove('active'));
+                layer.classList.add('active');
+
+                // 重新计算未激活层的堆叠
+                updatePositions();
+            });
+        });
+    </script>
 </body>
 </html>
