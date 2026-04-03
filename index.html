@@ -1,242 +1,58 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lydia Yang | The Hand-written Archive</title>
-    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Permanent+Marker&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #0d0d0f;
-            --frosted: rgba(255, 255, 255, 0.04);
-            --paper: #fdfdfa;
-            --sticky-yellow: #fdf59a;
-            --c1: #d26464; --c2: #648cd2; --c3: #64d28c; --c4: #d2b464; --c5: #a064d2;
-            --bezier: cubic-bezier(0.2, 1, 0.3, 1);
-        }
-
-        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; cursor: none; }
-        body { background-color: var(--bg); margin: 0; overflow: hidden; height: 100dvh; font-family: 'Arial', sans-serif; }
-
-        /* 鼠标准心 */
-        #cursor {
-            width: 35px; height: 35px; border: 1.5px solid rgba(255,255,255,0.4); border-radius: 50%;
-            position: fixed; pointer-events: none; z-index: 9999; mix-blend-mode: difference;
-            transition: transform 0.1s; display: flex; align-items: center; justify-content: center;
-        }
-        #cursor::after { content: ""; width: 2px; height: 2px; background: white; border-radius: 50%; }
-
-        /* 交互点击区域 */
-        .click-zone { position: fixed; top: 0; bottom: 0; z-index: 3000; }
-        .zone-prev { left: 0; width: 30%; }
-        .zone-next { right: 0; width: 70%; }
-
-        .stage { position: relative; width: 95%; max-width: 1100px; height: 85vh; perspective: 3000px; }
-
-        /* --- 1. 封面系统 (磨砂+马克笔+内置衬纸) --- */
-        .folder-cover {
-            position: absolute; inset: 0; z-index: 1000;
-            transform-origin: left center; transition: transform 1.2s var(--bezier), opacity 0.8s;
-        }
-        .folder-cover.open { transform: rotateY(-110deg); opacity: 0; pointer-events: none; }
-
-        /* 磨砂塑料层 */
-        .frosted-layer {
-            position: absolute; inset: 0; background: var(--frosted);
-            backdrop-filter: blur(40px) saturate(150%); -webkit-backdrop-filter: blur(40px) saturate(150%);
-            border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); z-index: 2;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        
-        /* 封面下的衬纸 (实现书签夹在中间的效果) */
-        .cover-inner-paper {
-            position: absolute; inset: 15px 30px 15px 15px; 
-            background: rgba(253, 253, 250, 0.95); border-radius: 5px; z-index: 1;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
-        }
-
-        .marker-title { 
-            font-family: 'Permanent Marker', cursive; font-size: clamp(40px, 10vw, 90px); 
-            color: #111; text-align: center; line-height: 0.9; transform: rotate(-2deg);
-        }
-
-        /* --- 2. 侧边书签 (夹层) --- */
-        .tab-nav {
-            position: absolute; right: -15px; top: 120px;
-            display: flex; flex-direction: column; gap: 12px; z-index: 500;
-        }
-        .tab {
-            width: 140px; height: 50px; border-radius: 0 8px 8px 0;
-            display: flex; align-items: center; padding-left: 20px;
-            font-family: 'Kalam', cursive; font-size: 11px; font-weight: 700; color: white;
-            transition: 0.5s var(--bezier); box-shadow: 2px 5px 15px rgba(0,0,0,0.2);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .tab.active { width: 170px; padding-left: 40px; }
-
-        /* --- 3. 内容页 --- */
-        .content-paper {
-            position: absolute; inset: 15px 35px 15px 15px;
-            background: var(--paper); border-radius: 6px;
-            z-index: 100; transition: transform 0.8s var(--bezier), opacity 0.5s;
-            padding: 60px; color: #1a1a1a;
-            background-image: url("https://www.transparenttextures.com/patterns/natural-paper.png");
-            box-shadow: -10px 0 30px rgba(0,0,0,0.1);
-            transform-origin: left; opacity: 0; pointer-events: none;
-        }
-        .stage.active .content-paper { opacity: 1; pointer-events: auto; }
-
-        .doc-title { font-family: 'Permanent Marker', cursive; font-size: 36px; margin-bottom: 30px; color: #000; }
-        .doc-body { font-family: 'Kalam', cursive; font-size: 22px; line-height: 1.6; color: #333; }
-
-        /* --- 4. 封底 + 便利贴 --- */
-        .folder-back {
-            position: absolute; inset: 0; background: #1e1e1f;
-            border-radius: 12px; z-index: 10;
-            box-shadow: 0 50px 100px rgba(0,0,0,0.5);
-        }
-        .sticky-note {
-            position: absolute; bottom: 50px; right: 50px;
-            width: 240px; height: 240px; background: var(--sticky-yellow);
-            transform: rotate(-3deg); padding: 30px;
-            box-shadow: 10px 10px 20px rgba(0,0,0,0.2);
-            font-family: 'Caveat', cursive; font-size: 30px; color: #1a1a1a;
-            background-image: linear-gradient(#e6e091 1px, transparent 1px);
-            background-size: 100% 30px;
-        }
-
-        /* 宝丽来相片效果 */
-        .polaroid {
-            position: absolute; bottom: 60px; right: 60px;
-            width: 180px; background: white; padding: 12px 12px 40px 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); transform: rotate(3deg);
-        }
-        .polaroid img { width: 100%; display: block; filter: contrast(1.1) sepia(0.2); }
-        /* 回形针 */
-        .paper-clip {
-            position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
-            width: 30px; height: 60px; border: 3px solid #999; border-radius: 15px;
-            z-index: 10; background: transparent;
-        }
-
-        /* 响应式：手机侧边书签 */
-        @media (max-width: 600px) {
-            .tab-nav { right: -10px; top: auto; bottom: 120px; gap: 8px; }
-            .tab { width: 85px; height: 40px; font-size: 9px; padding-left: 10px; }
-            .tab.active { width: 105px; padding-left: 15px; }
-            .content-paper { padding: 30px; inset: 10px 25px 10px 10px; }
-            .doc-title { font-size: 28px; }
-            #cursor { display: none; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lydia Yang</title>
+<link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-<div id="cursor"></div>
+<div class="book" id="book">
 
-<div class="click-zone zone-prev" onclick="pageBack()"></div>
-<div class="click-zone zone-next" onclick="pageNext()"></div>
-
-<div class="stage" id="stage">
-    
-    <div class="folder-back">
-        <div class="sticky-note" id="final-note" style="display:none;">
-            <div style="font-size: 15px; opacity: 0.5; margin-bottom: 10px;">Memo:</div>
-            Nice to Meet U :)
-            <div style="margin-top: 30px; border-top: 1px dashed rgba(0,0,0,0.1); padding-top: 15px; font-size: 18px;">
-                * Let's create something <br>cool together!
-            </div>
-        </div>
+  <!-- 封面 -->
+  <div class="page cover">
+    <div class="glass"></div>
+    <div class="content">
+      <h1>Lydia Yang</h1>
+      <p>Content Strategist</p>
     </div>
+  </div>
 
-    <nav class="tab-nav">
-        <div class="tab" id="t1" style="background:var(--c1)">① Creation</div>
-        <div class="tab" id="t2" style="background:var(--c2)">② Strategy</div>
-        <div class="tab" id="t3" style="background:var(--c3)">③ Distro</div>
-        <div class="tab" id="t4" style="background:var(--c4)">④ Scrapbook</div>
-        <div class="tab" id="t5" style="background:var(--c5)">⑤ About?</div>
-    </nav>
+  <!-- 内容 -->
+  <div class="page">① Content Creation</div>
+  <div class="page">② Content Strategy & Storytelling</div>
+  <div class="page">③ Distribution & PR</div>
+  <div class="page">④ Scrapbook</div>
 
-    <div class="content-paper" id="paper">
-        <h1 class="doc-title" id="f-title">TITLE</h1>
-        <p class="doc-body" id="f-desc">DESCRIPTION</p>
-        
-        <div id="photo-area" style="display:none;">
-            <div class="polaroid">
-                <div class="paper-clip"></div>
-                <img src="me.jpg" alt="Lydia">
-            </div>
-        </div>
+  <!-- About -->
+  <div class="page about">
+    <div class="polaroid">
+      <img src="assets/me.jpg">
+      <img src="assets/clip.png" class="clip">
+      <p>Me :)</p>
     </div>
+  </div>
 
-    <div class="folder-cover" id="cover">
-        <div class="cover-inner-paper"></div>
-        <div class="frosted-layer">
-            <div class="marker-title">LYDIA<br>YANG</div>
-            <div style="font-family: 'Kalam', cursive; margin-top: 20px; font-size: 18px; color: #333;">[ TAP TO OPEN ]</div>
-        </div>
+  <!-- 封底 -->
+  <div class="page back">
+    <div class="sticky">
+      <p>Nice to Meet U :)</p>
     </div>
+  </div>
 
 </div>
 
-<script>
-    let page = 0; // 0:封面, 1-5:内容, 6:封底
-    const cursor = document.getElementById('cursor');
+<!-- 标签 -->
+<div class="tabs">
+  <div data-page="1">①</div>
+  <div data-page="2">②</div>
+  <div data-page="3">③</div>
+  <div data-page="4">④</div>
+  <div data-page="5">⑤</div>
+</div>
 
-    document.addEventListener('mousemove', (e) => {
-        cursor.style.transform = `translate(${e.clientX - 17}px, ${e.clientY - 17}px)`;
-    });
-
-    const archive = {
-        1: { title: "① Content Creation", desc: "Crafting visual stories with marker-bold precision. My work focuses on the intersection of industrial aesthetics and digital fluidity." },
-        2: { title: "② Content Strategy & Storytelling", desc: "Logic is the invisible ink. I build narrative frameworks that connect brand DNA to human emotions." },
-        3: { title: "③ Distribution & PR", desc: "Managing the frequency. Strategic signal amplification across fragmented digital ecosystems." },
-        4: { title: "④ Scrapbook", desc: "Raw sketches, half-baked ideas, and experiments in skeuomorphism. The messy kitchen of creativity." },
-        5: { title: "⑤ About Me", desc: "Lydia Yang. A content strategist with a love for physical textures in a digital world. Always searching for the 'perfect blur'." }
-    };
-
-    function pageNext() {
-        if (page < 6) { page++; update(); }
-    }
-
-    function pageBack() {
-        if (page > 0) { page--; update(); }
-    }
-
-    function update() {
-        const stage = document.getElementById('stage');
-        const cover = document.getElementById('cover');
-        const note = document.getElementById('final-note');
-        const photo = document.getElementById('photo-area');
-
-        // 封面逻辑
-        if (page === 0) {
-            cover.classList.remove('open');
-            stage.classList.remove('active');
-        } else {
-            cover.classList.add('open');
-            stage.classList.add('active');
-        }
-
-        // 内容逻辑 (1-5页)
-        if (page >= 1 && page <= 5) {
-            const c = archive[page];
-            document.getElementById('f-title').innerText = c.title;
-            document.getElementById('f-desc').innerText = c.desc;
-            document.getElementById('paper').style.opacity = "1";
-            photo.style.display = (page === 5) ? "block" : "none";
-            
-            document.querySelectorAll('.tab').forEach((t, i) => {
-                t.classList.toggle('active', i + 1 === page);
-            });
-        } else {
-            document.getElementById('paper').style.opacity = "0";
-        }
-
-        // 封底逻辑 (第6页)
-        note.style.display = (page === 6) ? "block" : "none";
-    }
-</script>
-
+<script src="script.js"></script>
 </body>
 </html>
