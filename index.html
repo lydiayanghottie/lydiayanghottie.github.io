@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lydia Yang | Archive V4 Elite</title>
+    <title>Lydia Yang | Digital Archive V4.5</title>
     <style>
         :root {
-            --bg: #0f0f10;
-            /* 极高透磨砂：白色比例更低，模糊度更高 */
-            --frosted: rgba(255, 255, 255, 0.15); 
-            --paper: #fdfdfb;
-            /* 半透明书签色 (Jelly Colors) */
-            --c1: rgba(216, 140, 140, 0.7); 
-            --c2: rgba(140, 163, 216, 0.7); 
-            --c3: rgba(140, 216, 163, 0.7); 
-            --c4: rgba(216, 194, 140, 0.7); 
-            --c5: rgba(177, 140, 216, 0.7);
+            --bg: #0a0a0b;
+            /* 关键：极高透磨砂色值 */
+            --frosted: rgba(255, 255, 255, 0.05); 
+            --paper: #fefefd;
+            /* 果冻半透书签色 */
+            --c1: rgba(210, 100, 100, 0.6); 
+            --c2: rgba(100, 140, 210, 0.6); 
+            --c3: rgba(100, 210, 140, 0.6); 
+            --c4: rgba(210, 180, 100, 0.6); 
+            --c5: rgba(160, 100, 210, 0.6);
             --smooth: cubic-bezier(0.16, 1, 0.3, 1);
         }
 
@@ -25,103 +25,100 @@
             background-color: var(--bg);
             margin: 0; overflow: hidden;
             height: 100dvh; display: flex; justify-content: center; align-items: center;
-            /* 强制全局使用 Arial */
-            font-family: "Arial", "Helvetica", sans-serif;
+            font-family: "Arial", sans-serif;
         }
 
-        /* 自定义准心鼠标 */
+        /* --- 1. 高级准心鼠标 --- */
         #cursor {
-            width: 40px; height: 40px;
-            border: 1px solid rgba(255,255,255,0.3);
+            width: 44px; height: 44px;
+            border: 1px solid rgba(255,255,255,0.4);
             border-radius: 50%;
             position: fixed; pointer-events: none; z-index: 9999;
             display: flex; align-items: center; justify-content: center;
             mix-blend-mode: difference;
-            transition: transform 0.08s ease-out;
+            transition: transform 0.12s var(--smooth);
         }
         #cursor::after { content: ""; width: 2px; height: 2px; background: white; border-radius: 50%; }
+        body:active #cursor { transform: scale(0.7); }
 
         .stage {
             position: relative;
-            width: 100%; max-width: 950px; height: 85vh;
+            width: 100%; max-width: 1000px; height: 88vh;
             display: flex; flex-direction: column;
         }
 
-        /* --- 1. 高透磨砂封面 --- */
+        /* --- 2. 极致磨砂封面 --- */
         .cover {
             position: absolute; inset: 0;
             background: var(--frosted);
-            /* 极高模糊实现塑料感 */
-            backdrop-filter: blur(30px) saturate(120%); 
-            -webkit-backdrop-filter: blur(30px) saturate(120%);
-            z-index: 1000; border-radius: 10px;
+            /* 核心：两倍模糊 + 饱和度补偿 */
+            backdrop-filter: blur(45px) saturate(180%); 
+            -webkit-backdrop-filter: blur(45px) saturate(180%);
+            z-index: 1000; border-radius: 12px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            color: #ffffff; transition: all 1.2s var(--smooth);
-            box-shadow: 0 40px 100px rgba(0,0,0,0.5), inset 0 0 2px rgba(255,255,255,0.2);
+            color: #ffffff; transition: all 1.3s var(--smooth);
             border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: inset 0 0 50px rgba(255,255,255,0.05), 0 50px 100px rgba(0,0,0,0.6);
         }
-        .cover.hide { transform: translateY(-110%) rotateX(15deg); opacity: 0; pointer-events: none; }
+        .cover.hide { transform: translateY(-115%) rotateX(15deg); opacity: 0; pointer-events: none; }
         
         .cover .mj-logo { 
-            font-size: 52px; font-weight: 900; letter-spacing: -2px; 
-            text-shadow: 0 0 20px rgba(0,0,0,0.2);
+            font-family: "Arial Black", sans-serif; /* 工业感粗体 */
+            font-size: clamp(40px, 8vw, 72px); 
+            font-weight: 900; letter-spacing: -3px; 
+            text-align: center; line-height: 0.9;
         }
-        .cover .mj-sub { font-size: 10px; letter-spacing: 5px; margin-top: 15px; opacity: 0.8; }
+        .cover .mj-sub { font-size: 10px; letter-spacing: 6px; margin-top: 20px; opacity: 0.7; font-weight: bold; }
 
-        /* --- 2. 半透明果冻书签 --- */
+        /* --- 3. 物理半透书签 --- */
         .tab-nav {
-            position: absolute; top: 30px; left: 0; right: 0;
-            display: flex; justify-content: center; gap: 8px;
-            padding: 0 20px; z-index: 500;
+            position: absolute; top: 35px; left: 0; right: 0;
+            display: flex; justify-content: center; gap: 6px;
+            padding: 0 25px; z-index: 500;
         }
 
         .tab {
-            flex: 1; height: 42px;
-            border-radius: 6px;
+            flex: 1; height: 46px; border-radius: 8px;
             display: flex; align-items: center; justify-content: center;
             font-size: 10px; font-weight: 900; color: white;
             text-transform: uppercase; cursor: pointer;
-            transition: 0.4s var(--smooth);
-            /* 书签半透效果 */
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: 0.5s var(--smooth);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.1);
         }
-        .tab:hover, .tab.active { height: 55px; transform: translateY(-5px); opacity: 1; }
+        .tab:hover, .tab.active { height: 60px; transform: translateY(-8px); opacity: 1; }
 
-        /* --- 3. 优雅内页 --- */
-        .file-content {
-            position: absolute; top: 85px; left: 10px; right: 10px; bottom: 20px;
-            background: var(--paper); border-radius: 8px;
-            transform: translateY(120vh); transition: transform 0.9s var(--smooth);
-            z-index: 400; padding: 60px; color: #1a1a1a;
-            box-shadow: 0 30px 70px rgba(0,0,0,0.3);
+        /* --- 4. 优雅内页纸张 --- */
+        .file-page {
+            position: absolute; top: 90px; left: 15px; right: 15px; bottom: 20px;
+            background: var(--paper); border-radius: 12px;
+            transform: translateY(120vh); transition: transform 1s var(--smooth);
+            z-index: 400; padding: 60px; color: #111;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.4);
             background-image: url("https://www.transparenttextures.com/patterns/natural-paper.png");
         }
-        .stage.active .file-content { transform: translateY(0); }
+        .stage.active .file-page { transform: translateY(0); }
 
-        .doc-id { font-family: "Courier New", monospace; font-size: 11px; color: #999; margin-bottom: 40px; letter-spacing: 1px; }
-        .doc-title { font-size: 56px; font-weight: 900; margin: 0; letter-spacing: -3px; line-height: 0.85; }
+        .doc-meta { font-family: "Courier New", monospace; font-size: 11px; color: #aaa; margin-bottom: 40px; }
+        .doc-title { font-family: "Arial Black", sans-serif; font-size: clamp(32px, 7vw, 60px); font-weight: 900; margin: 0; letter-spacing: -3px; line-height: 0.9; }
         
-        /* 引入优雅的斜体/花体感 */
-        .doc-text { 
-            font-size: 19px; line-height: 1.6; margin-top: 40px; max-width: 500px;
-            font-style: italic; font-family: "Georgia", serif; color: #333; 
+        /* 优雅花体正文 */
+        .doc-body { 
+            font-family: "Georgia", serif; font-style: italic;
+            font-size: 19px; line-height: 1.6; margin-top: 40px; max-width: 520px; color: #222;
         }
 
-        .return-btn {
-            position: absolute; top: 25px; left: 50%; transform: translateX(-50%);
-            font-size: 9px; letter-spacing: 2px; color: #bbb; cursor: pointer;
-            transition: 0.3s;
+        .btn-close {
+            position: absolute; top: 30px; left: 50%; transform: translateX(-50%);
+            font-size: 9px; font-weight: 900; color: #ccc; cursor: pointer; letter-spacing: 2px;
         }
-        .return-btn:hover { color: #666; }
 
-        /* --- 4. 竖屏 (Mobile) 完美适配 --- */
+        /* --- 5. 竖屏 (Mobile) 适配 --- */
         @media (max-width: 600px) {
-            .tab-nav { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-            .tab { height: 36px; font-size: 9px; }
-            .file-content { padding: 35px; top: 130px; }
-            .doc-title { font-size: 38px; }
+            .tab-nav { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+            .tab { height: 40px; font-size: 9px; border-radius: 6px; }
+            .file-page { padding: 35px; top: 140px; }
             #cursor { display: none; }
         }
     </style>
@@ -132,30 +129,30 @@
 
 <div class="stage" id="stage">
     
-    <div class="cover" id="cover" onclick="openArchive()">
-        <div class="mj-logo">LYDIA YANG</div>
-        <div class="mj-sub">PROJECT_FILE_2026</div>
-        <div style="position:absolute; bottom:50px; font-size:9px; letter-spacing:3px; opacity:0.6;">[ TAP_TO_DECRYPT ]</div>
+    <div class="cover" id="cover" onclick="unlock()">
+        <div class="mj-logo">LYDIA<br>YANG</div>
+        <div class="mj-sub">PROJECT_INDEX_2026</div>
+        <div style="position:absolute; bottom:50px; font-size:8px; letter-spacing:4px; opacity:0.5;">[ DECRYPT_FILE ]</div>
     </div>
 
     <nav class="tab-nav">
-        <div class="tab" id="t1" style="background:var(--c1)" onclick="loadFile(1)">Creation</div>
-        <div class="tab" id="t2" style="background:var(--c2)" onclick="loadFile(2)">Strategy</div>
-        <div class="tab" id="t3" style="background:var(--c3)" onclick="loadFile(3)">Distro</div>
-        <div class="tab" id="t4" style="background:var(--c4)" onclick="loadFile(4)">Notes</div>
-        <div class="tab" id="t5" style="background:var(--c5)" onclick="loadFile(5)">Profile</div>
+        <div class="tab" id="t1" style="background:var(--c1)" onclick="show(1)">Creative</div>
+        <div class="tab" id="t2" style="background:var(--c2)" onclick="show(2)">Strategy</div>
+        <div class="tab" id="t3" style="background:var(--c3)" onclick="show(3)">Distro</div>
+        <div class="tab" id="t4" style="background:var(--c4)" onclick="show(4)">Notes</div>
+        <div class="tab" id="t5" style="background:var(--c5)" onclick="show(5)">About</div>
     </nav>
 
-    <div class="file-content">
-        <div class="return-btn" onclick="closeArchive()">CLOSE_AND_SEAL_FILE</div>
-        <div class="doc-id">MJ_ARCHIVE // REF_<span id="f-ref">000</span></div>
-        <h1 class="doc-title" id="f-title">TITLE</h1>
-        <p class="doc-text" id="f-desc">Description goes here...</p>
+    <div class="file-page">
+        <div class="btn-close" onclick="lock()">RE_SEAL_ARCHIVE</div>
+        <div class="doc-meta">LOG_REF // <span id="f-ref">000</span></div>
+        <h1 class="doc-title" id="f-title">SELECT_DATA</h1>
+        <p class="doc-body" id="f-desc">内容加载中...</p>
         
-        <div id="f-about" style="display:none; margin-top:40px;">
-            <div style="width:160px; background:white; padding:12px 12px 45px 12px; box-shadow:0 15px 40px rgba(0,0,0,0.1); transform:rotate(-3deg); border:1px solid #eee;">
-                <img src="me.jpg" style="width:100%; display:block;" alt="Lydia">
-                <p style="font-family:Arial; font-size:9px; font-style:normal; margin-top:10px; text-align:center; color:#999;">SUBJECT_01: LYDIA</p>
+        <div id="f-photo" style="display:none; margin-top:40px;">
+            <div style="width:160px; background:white; padding:12px 12px 40px 12px; box-shadow:0 15px 40px rgba(0,0,0,0.1); transform:rotate(-2deg); border:1px solid #eee;">
+                <img src="me.jpg" style="width:100%; display:block;" alt="Subject">
+                <div style="font-family:Arial; font-size:9px; font-style:normal; margin-top:10px; text-align:center; color:#bbb; font-weight:bold;">LYDIA_YANG.PNG</div>
             </div>
         </div>
     </div>
@@ -163,39 +160,39 @@
 </div>
 
 <script>
-    // 鼠标平滑跟随
+    // 鼠标平滑位置更新
     const cursor = document.getElementById('cursor');
     document.addEventListener('mousemove', (e) => {
-        cursor.style.transform = `translate(${e.clientX - 20}px, ${e.clientY - 20}px)`;
+        cursor.style.transform = `translate(${e.clientX - 22}px, ${e.clientY - 22}px)`;
     });
 
-    const archive = {
-        1: { title: "Visual<br>Poetry", ref: "CR-77", desc: "Digital aesthetics meet industrial precision. A collection of visual narratives crafted with intentional grid systems and refined typography." },
-        2: { title: "Logical<br>Flow", ref: "ST-88", desc: "The silent architecture behind the screen. Analyzing user behavior to construct seamless strategic frameworks." },
-        3: { title: "Signal<br>Path", ref: "DI-99", desc: "Navigating the noise of modern algorithms to ensure the core message resonates with the right audience at the perfect frequency." },
-        4: { title: "Raw<br>Drafts", ref: "NO-12", desc: "Unfiltered observations on the intersection of human emotion and physical-digital skeuomorphism." },
-        5: { title: "About<br>Lydia Yang", ref: "ID-01", desc: "A content strategist obsessed with the tactile feedback of the analog world and the boundless efficiency of the digital realm. Always seeking the 'perfect blur'." }
+    const dataMap = {
+        1: { title: "Visual<br>Engineering", ref: "CR-07", desc: "A pursuit of industrial precision within digital interfaces. We explore the tension between rigid grid systems and the fluid nature of modern screens." },
+        2: { title: "Strategic<br>Logic", ref: "ST-88", desc: "Every pixel must have a purpose. By decoding user psychology, we build narrative architectures that are as functional as they are beautiful." },
+        3: { title: "Signal<br>Pathways", ref: "DI-52", desc: "Optimizing the flow of information across fragmented networks. Ensuring that the brand's core frequency remains undisturbed by digital noise." },
+        4: { title: "Raw<br>Insights", ref: "NO-11", desc: "Unprocessed thoughts on skeuomorphism, the tactile web, and the return of physical metaphors in a purely digital existence." },
+        5: { title: "Identity:<br>Lydia Yang", ref: "ID-01", desc: "Lydia is a strategist focused on the intersection of human storytelling and high-tech aesthetics. She believes the best digital experiences should feel like a well-worn archive." }
     };
 
-    function openArchive() {
+    function unlock() {
         document.getElementById('cover').classList.add('hide');
-        setTimeout(() => loadFile(1), 600);
+        setTimeout(() => show(1), 500);
     }
 
-    function loadFile(id) {
+    function show(id) {
         document.getElementById('stage').classList.add('active');
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.getElementById('t' + id).classList.add('active');
 
-        const item = archive[id];
-        document.getElementById('f-title').innerHTML = item.title;
-        document.getElementById('f-ref').innerText = item.ref;
-        document.getElementById('f-desc').innerText = item.desc;
+        const content = dataMap[id];
+        document.getElementById('f-title').innerHTML = content.title;
+        document.getElementById('f-ref').innerText = content.ref;
+        document.getElementById('f-desc').innerText = content.desc;
         
-        document.getElementById('f-about').style.display = (id === 5) ? 'block' : 'none';
+        document.getElementById('f-photo').style.display = (id === 5) ? 'block' : 'none';
     }
 
-    function closeArchive() {
+    function lock() {
         document.getElementById('cover').classList.remove('hide');
         document.getElementById('stage').classList.remove('active');
     }
