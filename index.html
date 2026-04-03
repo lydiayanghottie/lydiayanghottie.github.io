@@ -3,19 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lydia Yang | Digital Archive</title>
+    <title>Lydia Yang | ARCHIVE V3</title>
     <style>
         :root {
-            --bg: #0d0d0f; 
-            --folder-tan: #e2e2da;
-            --paper: #f9f9f7;
-            /* 视频原版色卡 */
-            --c1: #c94b4b; --c2: #4b7bc9; --c3: #4bc97b; --c4: #c99e4b; --c5: #8e4bc9;
-            --spring: cubic-bezier(0.4, 0, 0.2, 1.5); /* 带有回弹感的曲线 */
-            --smooth: cubic-bezier(0.23, 1, 0.32, 1);
+            --bg: #121214; 
+            --folder-tan: #e6e6df;
+            --paper: #fcfcf9;
+            /* 莫兰迪高质感色系 */
+            --c1: #af5b5b; --c2: #5b7faf; --c3: #6eaf5b; --c4: #af915b; --c5: #835baf;
+            --smooth: cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; cursor: none; /* 隐藏原生鼠标 */ }
 
         body {
             background-color: var(--bg);
@@ -26,166 +25,133 @@
             height: 100dvh;
         }
 
-        /* 主容器 */
+        /* --- 自定义大鼠标 --- */
+        #cursor {
+            width: 40px; height: 40px;
+            border: 2px solid rgba(255,255,255,0.5);
+            border-radius: 50%;
+            position: fixed; pointer-events: none;
+            z-index: 9999; transition: transform 0.1s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        #cursor::after { content: ""; width: 4px; height: 4px; background: white; border-radius: 50%; }
+
+        /* 主舞台 */
         .stage {
             position: relative;
-            width: 100%; max-width: 1100px; height: 100%;
+            width: 100%; max-width: 1200px; height: 90vh;
             display: flex; flex-direction: column;
-            padding: 20px;
         }
 
-        /* --- 1. 封面 (3D拟物) --- */
-        .cover-overlay {
-            position: absolute; inset: 20px;
+        /* --- 封面：Marc Jacobs 极简风格 --- */
+        .cover {
+            position: absolute; inset: 0;
             background: var(--folder-tan);
-            z-index: 1000;
-            border-radius: 12px;
+            z-index: 1000; border-radius: 8px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            color: #1a1a1a;
-            transition: transform 1s var(--smooth), opacity 0.6s;
-            box-shadow: 0 40px 100px rgba(0,0,0,0.8);
-            cursor: pointer;
-            border: 1px solid rgba(255,255,255,0.2);
+            color: #1a1a1a; transition: transform 1.2s var(--smooth), opacity 0.8s;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.5);
         }
-        .cover-overlay.hide {
-            transform: translateZ(500px) translateY(-100%) rotateX(20deg);
-            opacity: 0; pointer-events: none;
-        }
-        .cover-content h1 { font-size: clamp(32px, 8vw, 56px); letter-spacing: 6px; margin: 0; font-weight: 900; text-align: center; }
-        .cover-content p { font-family: monospace; opacity: 0.6; text-align: center; margin-top: 20px; }
+        .cover.hide { transform: translateY(-110%) scale(0.9); opacity: 0; pointer-events: none; }
+        
+        .cover h1 { font-size: clamp(40px, 10vw, 80px); font-weight: 900; letter-spacing: -2px; margin: 0; }
+        .cover p { font-family: monospace; letter-spacing: 5px; opacity: 0.5; margin-top: 20px; }
 
-        /* --- 2. 视频同款彩色网格 (响应式) --- */
-        .grid-nav {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 12px;
-            margin-top: 60px;
-            transition: transform 0.8s var(--smooth), opacity 0.5s;
-            z-index: 100;
+        /* --- 核心导航：物理标签 (PC & Mobile 通用) --- */
+        .tab-nav {
+            position: absolute; top: 40px; left: 0; right: 0;
+            display: flex; justify-content: center; gap: 5px;
+            padding: 0 20px; z-index: 500;
+            transition: transform 0.8s var(--smooth);
         }
-        .stage.active .grid-nav {
-            transform: translateY(-80px) scale(0.92);
-            opacity: 0.6;
-        }
+        .stage.active .tab-nav { transform: translateY(-20px) scale(0.95); }
 
-        .nav-card {
-            height: 70px;
-            border-radius: 6px;
+        .tab {
+            flex: 1; max-width: 150px; height: 45px;
+            border-radius: 8px 8px 0 0;
             display: flex; align-items: center; justify-content: center;
-            font-weight: 800; font-size: 13px;
+            font-size: 11px; font-weight: 800; color: white;
             text-transform: uppercase; letter-spacing: 1px;
-            cursor: pointer;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-            transition: transform 0.3s var(--spring);
+            transition: all 0.4s var(--smooth);
+            opacity: 0.8; box-shadow: 0 -5px 15px rgba(0,0,0,0.2);
         }
-        .nav-card:active { transform: scale(0.95); }
+        .tab:hover { height: 55px; opacity: 1; transform: translateY(-5px); }
+        .tab.active { height: 60px; opacity: 1; transform: translateY(-10px); }
 
-        /* --- 3. 文件抽屉 (内容区) --- */
-        .file-drawer {
+        /* --- 内容纸张：抽拉效果 --- */
+        .file-page {
             position: absolute;
-            bottom: -80%; left: 20px; right: 20px; height: 75%;
+            top: 100px; left: 10px; right: 10px; bottom: 20px;
             background: var(--paper);
-            border-radius: 12px 12px 0 0;
-            transition: transform 0.8s var(--spring);
-            padding: 40px;
-            color: #1a1a1a;
-            box-shadow: 0 -20px 60px rgba(0,0,0,0.5);
-            z-index: 200;
-            overflow-y: auto;
+            border-radius: 12px;
+            transform: translateY(120vh); /* 初始在屏幕下方 */
+            transition: transform 0.9s var(--smooth);
+            z-index: 400; padding: 60px; color: #1a1a1a;
+            box-shadow: 0 20px 80px rgba(0,0,0,0.4);
+            background-image: url('https://www.transparenttextures.com/patterns/natural-paper.png');
         }
-        .stage.active .file-drawer {
-            transform: translateY(-100%); /* 弹起动画 */
-        }
+        .stage.active .file-page { transform: translateY(0); }
 
-        .file-header {
-            font-family: monospace; font-size: 11px;
-            color: #888; border-bottom: 1px solid #ddd;
-            padding-bottom: 10px; margin-bottom: 30px;
-            display: flex; justify-content: space-between;
+        /* 返回封面的“机关” */
+        .home-trigger {
+            position: absolute; top: -30px; left: 50%; transform: translateX(-50%);
+            font-family: monospace; font-size: 10px; color: rgba(255,255,255,0.3);
+            text-decoration: underline; pointer-events: auto;
         }
 
-        .file-body h2 { font-size: clamp(28px, 6vw, 42px); margin: 0; line-height: 1; }
-        .file-body .meta-tags { margin: 20px 0; display: flex; gap: 10px; }
-        .tag { padding: 4px 10px; border: 1px solid #000; font-size: 10px; font-weight: bold; border-radius: 100px; }
-        .file-body p { line-height: 1.7; opacity: 0.8; font-size: 16px; max-width: 600px; }
+        .file-content h2 { font-size: clamp(30px, 8vw, 60px); margin: 0; line-height: 0.9; letter-spacing: -2px; }
+        .file-content p { font-size: 18px; line-height: 1.6; max-width: 550px; margin-top: 40px; }
 
-        /* --- 关于照片 (ID卡) --- */
-        .id-polaroid {
-            width: 100%; max-width: 200px;
-            background: white; padding: 10px 10px 30px 10px;
+        .id-shot {
+            position: absolute; bottom: 60px; right: 60px;
+            width: 180px; transform: rotate(-3deg);
+            background: white; padding: 12px 12px 40px 12px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            transform: rotate(2deg);
-            margin-top: 30px;
-            border: 1px solid #eee;
+            border: 1px solid #ddd;
         }
-        .id-polaroid img { width: 100%; display: block; }
+        .id-shot img { width: 100%; display: block; }
 
-        /* 顶部导航辅助 */
-        .top-bar {
-            position: absolute; top: 20px; left: 20px; right: 20px;
-            display: flex; justify-content: space-between;
-            font-size: 12px; font-weight: bold; opacity: 0;
-            transition: opacity 1s;
-        }
-        .stage.active .top-bar { opacity: 0.4; }
-
-        .close-btn {
-            position: absolute; top: 15px; right: 20px;
-            width: 30px; height: 30px; background: #eee;
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-weight: bold; cursor: pointer;
-        }
-
-        /* 移动端适配调整 */
+        /* 移动端适配：标签改为两行排布或缩放 */
         @media (max-width: 600px) {
-            .grid-nav { grid-template-columns: repeat(2, 1fr); margin-top: 100px; }
-            .file-drawer { padding: 25px; height: 80%; }
-            .file-body h2 { font-size: 32px; }
+            .tab-nav { flex-wrap: wrap; top: 20px; }
+            .tab { flex: none; width: 31%; height: 35px; font-size: 9px; }
+            .file-page { padding: 30px; padding-top: 60px; }
+            .id-shot { width: 120px; bottom: 30px; right: 30px; }
         }
     </style>
 </head>
 <body>
 
+<div id="cursor"></div>
+
 <div class="stage" id="stage">
     
-    <div class="top-bar">
-        <span>LYDIA_SYSTEM_V3.0</span>
-        <span>INDEX / RECOVERED FILES</span>
+    <div class="cover" id="cover" onclick="enterArchive()">
+        <p>MARC JACOBS STYLE ARCHIVE</p>
+        <h1>LYDIA YANG</h1>
+        <p>[ CLICK TO OPEN ]</p>
     </div>
 
-    <div class="cover-overlay" id="cover" onclick="unlock()">
-        <div class="cover-content">
-            <h1>LYDIA YANG</h1>
-            <p>[ CLICK TO ACCESS ARCHIVE ]</p>
-        </div>
-    </div>
-
-    <nav class="grid-nav">
-        <div class="nav-card" style="background:var(--c1)" onclick="openFile('creative')">Creation</div>
-        <div class="nav-card" style="background:var(--c2)" onclick="openFile('strategy')">Strategy</div>
-        <div class="nav-card" style="background:var(--c3)" onclick="openFile('media')">Media</div>
-        <div class="nav-card" style="background:var(--c4)" onclick="openFile('archive')">Dossier</div>
-        <div class="nav-card" style="background:var(--c5)" onclick="openFile('about')">Profile</div>
+    <nav class="tab-nav">
+        <div class="tab" id="t-1" style="background:var(--c1)" onclick="showFile(1, 'CREATIVE')">Creative</div>
+        <div class="tab" id="t-2" style="background:var(--c2)" onclick="showFile(2, 'STRATEGY')">Strategy</div>
+        <div class="tab" id="t-3" style="background:var(--c3)" onclick="showFile(3, 'DISTRO')">Distro</div>
+        <div class="tab" id="t-4" style="background:var(--c4)" onclick="showFile(4, 'NOTES')">Notes</div>
+        <div class="tab" id="t-5" style="background:var(--c5)" onclick="showFile(5, 'ABOUT')">About</div>
     </nav>
 
-    <div class="file-drawer" id="drawer">
-        <div class="close-btn" onclick="closeFile()">×</div>
-        <div class="file-header">
-            <span id="f-id">REF: 000-000</span>
-            <span>DATE: 04/04/2026</span>
-        </div>
-        <div class="file-body">
-            <div class="meta-tags">
-                <div class="tag">CLASSIFIED</div>
-                <div class="tag" id="f-tag">INTERNAL</div>
-            </div>
-            <h2 id="f-title">TITLE</h2>
-            <p id="f-content">CONTENT</p>
+    <div class="file-page">
+        <div class="home-trigger" onclick="goHome()">RE-SEAL FOLDER (RETURN)</div>
+
+        <div class="file-content">
+            <div style="font-family:monospace; font-size:12px; color:#aaa; margin-bottom:10px;">REF_DATA // <span id="f-ref">000</span></div>
+            <h2 id="f-title">SELECT A FILE</h2>
+            <p id="f-desc">请从上方选择一个档案索引以查看详细内容。</p>
             
-            <div id="f-extra" style="display:none;">
-                <div class="id-polaroid">
+            <div id="f-id" style="display:none;">
+                <div class="id-shot">
                     <img src="me.jpg" alt="Lydia">
-                    <p style="font-size:10px; color:#999; margin-top:10px; text-align:center;">SUBJECT: YANG_L</p>
+                    <div style="text-align:center; font-family:monospace; font-size:10px; margin-top:10px;">ID: LYDIA_YANG</div>
                 </div>
             </div>
         </div>
@@ -194,32 +160,46 @@
 </div>
 
 <script>
-    const archiveData = {
-        creative: { title: "Visual<br>Displacement", tag: "CREATIVE", ref: "CD-992", content: "基于非线性叙事的内容产出。我们通过视觉位移与色彩解构，重塑品牌在数字空间的交互体验。" },
-        strategy: { title: "Logic<br>Architecture", tag: "STRATEGY", ref: "ST-104", content: "策略是档案的骨架。深挖数据背后的行为动机，构建具有防御性的叙事逻辑矩阵。" },
-        media: { title: "Signal<br>Amplifier", tag: "DISTRIBUTION", ref: "DI-058", content: "在噪声中校准频率。利用多维分发协议，确保核心信息在算法丛林中保持高精度送达。" },
-        archive: { title: "Fragmented<br>Records", tag: "MISC", ref: "AR-773", content: "一些未被分类的创意碎片、实验性笔记以及对未来数字伦理的观察记录。" },
-        about: { title: "Lydia<br>Yang", tag: "IDENTITY", ref: "ID-001", content: "Lydia Yang 是一位深耕于内容策略与交互工程的跨界者。她热衷于将物理世界的质感带入冰冷的数字界面。" }
+    // 自定义鼠标逻辑
+    const cursor = document.getElementById('cursor');
+    document.addEventListener('mousemove', (e) => {
+        cursor.style.left = e.clientX - 20 + 'px';
+        cursor.style.top = e.clientY - 20 + 'px';
+    });
+
+    const data = {
+        1: { title: "Visual<br>Engineering", ref: "CR-901", desc: "不仅是设计，更是工程。通过严密的栅格系统与动态交互，为品牌构建可进化的数字资产库。" },
+        2: { title: "Strategic<br>Logic", ref: "ST-224", desc: "所有的创意都应基于逻辑。通过对媒介环境的切片分析，精准捕捉受众的认知锚点。" },
+        3: { title: "Content<br>Distribution", ref: "DI-005", desc: "打破信息孤岛。利用去中心化的分发策略，让优质内容在算法推荐中获得指数级增长。" },
+        4: { title: "Experimental<br>Notes", ref: "NO-771", desc: "关于未来交互、物理质感与数字化生存的非线性思考。这里存放着最原始的灵感火花。" },
+        5: { title: "About<br>Lydia Yang", ref: "ID-000", desc: "Lydia 是一位深耕于数字内容领域的策略工程师。她主张用理性的架构包裹感性的叙事。热爱极简、工业感与物理反馈。" }
     };
 
-    function unlock() {
+    function enterArchive() {
         document.getElementById('cover').classList.add('hide');
+        // 默认打开第一个
+        setTimeout(() => showFile(1, 'CREATIVE'), 600);
     }
 
-    function openFile(key) {
-        const data = archiveData[key];
-        document.getElementById('f-title').innerHTML = data.title;
-        document.getElementById('f-tag').innerText = data.tag;
-        document.getElementById('f-id').innerText = "REF: " + data.ref;
-        document.getElementById('f-content').innerText = data.content;
-        
-        // 特殊处理About页的照片显示
-        document.getElementById('f-extra').style.display = (key === 'about') ? 'block' : 'none';
-        
+    function showFile(idx, type) {
         document.getElementById('stage').classList.add('active');
+        
+        // 切换标签状态
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('t-' + idx).classList.add('active');
+
+        // 填充内容
+        const item = data[idx];
+        document.getElementById('f-title').innerHTML = item.title;
+        document.getElementById('f-ref').innerText = item.ref;
+        document.getElementById('f-desc').innerText = item.desc;
+        
+        // 照片显示逻辑
+        document.getElementById('f-id').style.display = (idx === 5) ? 'block' : 'none';
     }
 
-    function closeFile() {
+    function goHome() {
+        document.getElementById('cover').classList.remove('hide');
         document.getElementById('stage').classList.remove('active');
     }
 </script>
