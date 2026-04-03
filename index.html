@@ -1,193 +1,199 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lydia Yang | Hand-drawn Archive</title>
-    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Permanent+Marker&family=Kalam:wght@300;700&display=swap" rel="stylesheet">
+    <title>LYDIA YANG // SYSTEM_019</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #121213;
-            --frosted: rgba(255, 255, 255, 0.05);
-            --paper: #fcfcf9;
-            --sticky-note: #fdf59a; /* 经典便利贴黄 */
-            --c1: #d26464; --c2: #648cd2; --c3: #64d28c; --c4: #d2b464; --c5: #a064d2;
-            --smooth: cubic-bezier(0.2, 1, 0.3, 1);
+            --bg: #dbdbd7; /* 更加真实的水泥冷灰色 */
+            --paper: #fcfcfc;
+            --glass-white: rgba(255, 255, 255, 0.3);
+            --accent: #111;
+            /* 丝滑交互的关键：苹果同款贝塞尔曲线 */
+            --smooth-curve: cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; cursor: none; }
-        body { background-color: var(--bg); margin: 0; overflow: hidden; height: 100dvh; font-family: "Arial", sans-serif; }
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; cursor: crosshair; }
+        body { background-color: var(--bg); margin: 0; overflow: hidden; height: 100dvh; font-family: 'Inter', sans-serif; }
 
-        /* --- 1. 交互区域覆盖层 (翻书逻辑) --- */
-        .click-zone { position: fixed; top: 0; bottom: 0; z-index: 2000; width: 30%; }
-        .zone-left { left: 0; } /* 后退 */
-        .zone-right { right: 0; width: 70%; } /* 前翻 */
+        /* 交互区域 */
+        .click-zone { position: fixed; top: 0; bottom: 0; z-index: 5000; width: 50%; }
+        .next { right: 0; } .prev { left: 0; }
 
-        /* --- 2. 准心鼠标 --- */
-        #cursor {
-            width: 30px; height: 30px; border: 1px solid rgba(255,255,255,0.5); border-radius: 50%;
-            position: fixed; pointer-events: none; z-index: 9999; mix-blend-mode: difference;
-            transition: transform 0.1s;
+        .stage { position: relative; width: 100%; height: 100dvh; display: flex; align-items: center; justify-content: center; perspective: 2000px; }
+
+        /* --- 1. 文件夹主体 --- */
+        .binder {
+            position: relative; width: 90%; max-width: 900px; height: 85vh;
+            background: var(--paper); border-radius: 2px;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.15), inset 0 0 2px rgba(0,0,0,0.1);
+            display: flex; overflow: hidden;
         }
 
-        .stage { position: relative; width: 95%; max-width: 1000px; height: 85vh; perspective: 2000px; }
-
-        /* --- 3. 封底 + 便利贴 --- */
-        .back-folder {
-            position: absolute; inset: 0; background: #222; border-radius: 12px;
-            box-shadow: 0 50px 100px rgba(0,0,0,0.8); z-index: 1;
-        }
-        .sticky-note {
-            position: absolute; bottom: 40px; right: 40px; width: 220px; height: 220px;
-            background: var(--sticky-note); padding: 25px; transform: rotate(-3deg);
-            box-shadow: 5px 5px 15px rgba(0,0,0,0.2);
-            font-family: 'Caveat', cursive; color: #1a1a50; font-size: 26px; line-height: 1.2;
-            background-image: radial-gradient(#00000011 1px, transparent 0); background-size: 20px 20px;
+        /* 衬底字母 (图1风格：超轻字重) */
+        .alphabet-bg {
+            position: absolute; inset: 60px; font-size: 11vh; font-weight: 300; 
+            line-height: 1.1; color: #f0f0f0; letter-spacing: 0.4em; 
+            word-break: break-all; pointer-events: none; z-index: 1;
         }
 
-        /* --- 4. 书签 (夹在中间) --- */
-        .tab-nav {
-            position: absolute; right: -15px; top: 80px;
-            display: flex; flex-direction: column; gap: 10px; z-index: 5;
+        /* --- 2. 侧边书签 (增强清晰度) --- */
+        .side-tabs {
+            position: absolute; right: 0; top: 120px; display: flex;
+            flex-direction: column; gap: 2px; z-index: 800; /* 夹在封面和内容之间 */
         }
         .tab {
-            width: 120px; height: 45px; border-radius: 0 8px 8px 0;
-            display: flex; align-items: center; padding-left: 20px;
-            font-family: 'Permanent Marker', cursive; font-size: 11px; color: white;
-            transition: 0.5s var(--smooth); backdrop-filter: blur(5px);
-            border: 1px solid rgba(255,255,255,0.1); opacity: 0.9;
+            width: 100px; height: 36px; background: #eee;
+            display: flex; align-items: center; padding-left: 15px;
+            font-size: 9px; font-weight: 800; color: #999;
+            text-transform: uppercase; letter-spacing: 1px;
+            border-left: 3px solid transparent; transition: 0.3s;
         }
-        .tab.active { width: 150px; padding-left: 40px; }
+        .tab.active { background: #111; color: #fff; width: 115px; border-left: 3px solid #555; }
 
-        /* --- 5. 内容纸张 --- */
-        .paper-layer {
-            position: absolute; inset: 15px; background: var(--paper); border-radius: 5px;
-            z-index: 10; transition: all 0.8s var(--smooth);
-            background-image: url("https://www.transparenttextures.com/patterns/natural-paper.png");
-            box-shadow: -5px 0 20px rgba(0,0,0,0.1);
-            transform-origin: left; padding: 60px; color: #111;
-        }
-        .stage:not(.active) .paper-layer { transform: rotateY(10deg) translateX(20px); opacity: 0; }
-
-        /* --- 6. 磨砂封面 (最上层) --- */
-        .cover {
-            position: absolute; inset: 0; z-index: 100;
-            background: var(--frosted); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
-            border-radius: 12px; transition: 1.2s var(--smooth); transform-origin: left;
+        /* --- 3. 真实磨砂封面 --- */
+        .cover-overlay {
+            position: absolute; inset: 0; z-index: 1500;
+            background: rgba(255, 255, 255, 0.1);
+            /* 多层模糊实现真实压克力质感 */
+            backdrop-filter: blur(25px) saturate(120%) contrast(90%);
+            -webkit-backdrop-filter: blur(25px) saturate(120%) contrast(90%);
+            border: 1px solid rgba(255, 255, 255, 0.4);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 1.2s var(--smooth-curve), opacity 0.8s var(--smooth-curve);
+            transform-origin: left center;
         }
-        .cover.open { transform: rotateY(-110deg); opacity: 0; pointer-events: none; }
+        .cover-overlay.open { transform: rotateY(-95deg) translateX(-20%); opacity: 0; pointer-events: none; }
 
-        /* 封面马克笔字体 */
-        .marker-name { font-family: 'Permanent Marker', sans-serif; font-size: 80px; color: #000; text-align: center; line-height: 1; }
-        .marker-sub { font-family: 'Kalam', cursive; font-size: 20px; color: #222; margin-top: 10px; opacity: 0.8; }
+        /* 封面中央硬质标签 */
+        .cover-label {
+            background: #fff; padding: 20px 60px; border: 1px solid #eee;
+            font-size: 50px; font-weight: 900; letter-spacing: -2px; color: #000;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+        }
 
-        /* 内容字体 */
-        .doc-title { font-family: 'Permanent Marker', cursive; font-size: 40px; margin-bottom: 20px; }
-        .doc-body { font-family: 'Kalam', cursive; font-size: 22px; line-height: 1.5; color: #333; }
+        /* 身份卡 + 物理回形针 */
+        .id-badge {
+            position: absolute; top: 50px; left: 80px;
+            background: #fff; padding: 15px; width: 240px;
+            display: flex; gap: 15px; border: 1px solid #f0f0f0;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+        .id-badge img { width: 80px; height: 100px; object-fit: cover; background: #f5f5f5; }
+        .id-text { font-size: 9px; font-weight: 700; line-height: 1.5; color: #222; text-transform: uppercase; }
 
-        @media (max-width: 600px) {
-            .tab-nav { right: -5px; top: auto; bottom: 50px; }
-            .tab { width: 80px; font-size: 9px; }
-            .marker-name { font-size: 50px; }
-            .sticky-note { width: 160px; height: 160px; font-size: 20px; right: 20px; }
+        .clip-metal {
+            position: absolute; top: -12px; left: 110px;
+            width: 15px; height: 45px; border: 2px solid #aaa; border-radius: 12px;
+            z-index: 20; box-shadow: 1px 2px 4px rgba(0,0,0,0.1);
+        }
+        .clip-metal::after {
+            content: ""; position: absolute; top: 4px; left: 2px;
+            width: 7px; height: 32px; border: 2px solid #bbb; border-top: none; border-radius: 0 0 6px 6px;
+        }
+
+        /* --- 4. 内容展示层 --- */
+        .content-view {
+            position: absolute; inset: 0; z-index: 100;
+            padding: 120px 100px; opacity: 0; transform: scale(0.98);
+            transition: opacity 0.6s var(--smooth-curve), transform 0.6s var(--smooth-curve);
+        }
+        .content-view.active { opacity: 1; transform: scale(1); }
+
+        .idx { font-size: 10px; font-weight: 900; color: #ccc; margin-bottom: 20px; letter-spacing: 2px; }
+        .title { font-size: 60px; font-weight: 900; letter-spacing: -3px; margin: 0; line-height: 0.85; color: #000; }
+        .desc { font-size: 18px; line-height: 1.4; color: #444; margin-top: 40px; max-width: 500px; font-weight: 400; }
+
+        @media (max-width: 768px) {
+            .binder { width: 94%; height: 85vh; }
+            .content-view { padding: 80px 40px; }
+            .cover-label { padding: 15px 30px; font-size: 32px; }
+            .id-badge { transform: scale(0.7); left: 10px; top: 10px; }
+            .tab { width: 70px; height: 30px; font-size: 7px; }
+            .tab.active { width: 85px; }
         }
     </style>
 </head>
 <body>
 
-<div id="cursor"></div>
+<div class="click-zone prev" onclick="move(-1)"></div>
+<div class="click-zone next" onclick="move(1)"></div>
 
-<div class="click-zone zone-left" onclick="goBack()"></div>
-<div class="click-zone zone-right" onclick="goForward()"></div>
-
-<div class="stage" id="stage">
+<div class="stage">
     
-    <div class="back-folder">
-        <div class="sticky-note">
-            <div style="font-size: 14px; opacity: 0.5; margin-bottom: 10px;">Memo:</div>
-            Nice to Meet U :)
-            <div style="margin-top: 20px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 10px; font-size: 16px;">
-                * Don't forget to <br>check the scrapbook!
-            </div>
+    <div class="binder">
+        <div class="alphabet-bg">A B C D E F G H I J K L M N O P Q R S T U V W X Y Z</div>
+
+        <div class="side-tabs">
+            <div class="tab" id="t1">CREATION</div>
+            <div class="tab" id="t2">STRATEGY</div>
+            <div class="tab" id="t3">DISTRO</div>
+            <div class="tab" id="t4">SCRAPBOOK</div>
+            <div class="tab" id="t5">IDENTITY</div>
         </div>
-    </div>
 
-    <nav class="tab-nav">
-        <div class="tab" id="t1" style="background:var(--c1)">Content Creation</div>
-        <div class="tab" id="t2" style="background:var(--c2)">Storytelling</div>
-        <div class="tab" id="t3" style="background:var(--c3)">Distribution</div>
-        <div class="tab" id="t4" style="background:var(--c4)">Scrapbook</div>
-        <div class="tab" id="t5" style="background:var(--c5)">About</div>
-    </nav>
+        <div class="content-view" id="view">
+            <div class="idx" id="v-idx">FILE_01</div>
+            <h2 class="title" id="v-title">SYSTEM_INIT</h2>
+            <p class="desc" id="v-desc">Parsing data...</p>
+        </div>
 
-    <div class="paper-layer" id="paper">
-        <div id="doc-ref" style="font-family: monospace; font-size: 12px; opacity: 0.4;">MJ-001</div>
-        <h1 class="doc-title" id="f-title">TITLE</h1>
-        <p class="doc-body" id="f-desc">Content...</p>
-    </div>
-
-    <div class="cover" id="cover">
-        <div class="marker-name">LYDIA<br>YANG</div>
-        <div class="marker-sub">Content Strategist</div>
+        <div class="cover-overlay" id="cover">
+            <div class="clip-metal"></div>
+            <div class="id-badge">
+                <img src="me.jpg" alt="ID">
+                <div class="id-text">
+                    BYCHKOVA<br>ANASTASIA (LYDIA)<br>
+                    STRATEGIST / DESIGNER<br>
+                    YEAR_2026 // BHSAD
+                </div>
+            </div>
+            <div class="cover-label">WORLING</div>
+            <div style="margin-top:30px; font-size:10px; letter-spacing:5px; font-weight:700; opacity:0.3;">[ ACCESS_ARCHIVE ]</div>
+        </div>
     </div>
 
 </div>
 
 <script>
-    let currentPage = 0; // 0: 封面, 1-5: 目录页
-    const cursor = document.getElementById('cursor');
+    let step = 0; // 0:Cover, 1-5:Pages
+    const data = [
+        {},
+        { i: "FILE_01", t: "CONTENT<br>CREATION", d: "In an innovative twist on traditional reference materials, we explore the boundary of digital aesthetics through tactile metaphors." },
+        { i: "FILE_02", t: "STRATEGIC<br>LOGIC", d: "Engineering narratives that stick. We bridge the gap between industrial rigor and human-centric storytelling." },
+        { i: "FILE_03", t: "GLOBAL<br>DISTRO", d: "Navigating fragmented signals in the noise. Optimizing frequency for the hyper-connected era of 2026." },
+        { i: "FILE_04", t: "DIGITAL<br>SCRAPBOOK", d: "Raw insights and experimental prototypes. The unfiltered engine room of creative development." },
+        { i: "FILE_05", t: "PERSONAL<br>IDENTITY", d: "Lydia Yang. A strategist driven by logic and inspired by the 'perfect blur'. Based in the future." }
+    ];
 
-    document.addEventListener('mousemove', (e) => {
-        cursor.style.left = e.clientX - 15 + 'px';
-        cursor.style.top = e.clientY - 15 + 'px';
-    });
-
-    const archive = {
-        1: { title: "① Content Creation", desc: "Using a marker to define visual boundaries. Everything starts with a blank page and a bold stroke." },
-        2: { title: "② Content Strategy", desc: "Narratives that stick. Building the 'why' behind the 'what' using deep logic and human empathy." },
-        3: { title: "③ Distribution & PR", desc: "Amplifying signals in the noise. Strategic outreach meets precision-targeted storytelling." },
-        4: { title: "④ Scrapbook", desc: "The raw bits. Experimental notes, sketches, and half-baked ideas that might just work." },
-        5: { title: "⑤ About Me", desc: "Lydia Yang. A mix of industrial precision and messy human creativity. Coffee-fueled and logic-driven." }
-    };
-
-    function goForward() {
-        if (currentPage < 5) {
-            currentPage++;
-            updateUI();
-        }
-    }
-
-    function goBack() {
-        if (currentPage > 0) {
-            currentPage--;
-            updateUI();
-        }
+    function move(dir) {
+        step = Math.max(0, Math.min(5, step + dir));
+        updateUI();
     }
 
     function updateUI() {
-        const stage = document.getElementById('stage');
-        const cover = document.getElementById('cover');
-        const paper = document.getElementById('paper');
-
-        // 封面状态
-        if (currentPage === 0) {
-            cover.classList.remove('open');
-            stage.classList.remove('active');
+        const cv = document.getElementById('cover');
+        const vw = document.getElementById('view');
+        
+        if (step === 0) {
+            cv.classList.remove('open');
+            vw.classList.remove('active');
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         } else {
-            cover.classList.add('open');
-            stage.classList.add('active');
+            cv.classList.add('open');
+            vw.classList.add('active');
             
             // 更新内容
-            const content = archive[currentPage];
-            document.getElementById('f-title').innerText = content.title;
-            document.getElementById('f-desc').innerText = content.desc;
-            document.getElementById('doc-ref').innerText = "ARCHIVE_REF: 00" + currentPage;
+            const p = data[step];
+            document.getElementById('v-idx').innerText = p.i;
+            document.getElementById('v-title').innerHTML = p.t;
+            document.getElementById('v-desc').innerText = p.d;
 
             // 更新标签高亮
             document.querySelectorAll('.tab').forEach((t, i) => {
-                t.classList.toggle('active', i + 1 === currentPage);
+                t.classList.toggle('active', i + 1 === step);
             });
         }
     }
