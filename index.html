@@ -2,190 +2,184 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VICE_OS // ARCHIVE_1998</title>
+    <title>LYDIA_OS // VINTAGE_DESKTOP</title>
     <style>
         :root {
-            --neon-pink: #ff00ff;
-            --neon-blue: #00ffff;
+            --win-blue: #008080;
             --win-gray: #c0c0c0;
-            --taskbar-glass: rgba(0, 0, 0, 0.6);
         }
 
-        * { box-sizing: border-box; cursor: crosshair; font-family: 'Courier New', monospace; }
-
-        body, html { margin: 0; padding: 0; height: 100vh; background: #000; overflow: hidden; }
-
-        /* --- GTA 风格 CRT 滤镜 --- */
-        body::after {
-            content: ""; position: fixed; inset: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
-            background-size: 100% 4px; z-index: 10000; pointer-events: none;
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            overflow: hidden; background: #1a1a1a; 
+            font-family: 'Tahoma', sans-serif;
         }
 
-        /* --- BIOS & 加载条 --- */
-        #boot-screen {
-            position: fixed; inset: 0; background: #000; color: var(--neon-blue);
-            padding: 40px; z-index: 9999; display: flex; flex-direction: column;
-        }
-        #load-bar-container {
-            width: 300px; height: 20px; border: 2px solid var(--neon-pink);
-            margin-top: 20px; display: none; position: relative;
-        }
-        #load-bar { height: 100%; background: var(--neon-pink); width: 0%; transition: 0.1s; }
-
-        /* --- 桌面 (GTA 背景) --- */
-        #desktop {
-            position: relative; width: 100vw; height: 100vh;
-            background: linear-gradient(45deg, #2b0054 0%, #ff00ff55 100%), url('https://web.archive.org/web/20021004052145im_/https://www.rockstargames.com/vicecity/screenshots/screenshot1.jpg');
-            background-size: cover; background-position: center;
-            display: none; padding: 20px;
+        /* 第一层：环境（书桌背景） */
+        #room {
+            width: 100vw; height: 100vh;
+            background: url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=2000') no-repeat center center;
+            background-size: cover;
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 1.5s ease-in-out;
         }
 
-        /* 文件夹图标 */
+        /* 第二层：显示器外壳 */
+        #monitor {
+            width: 600px; height: 450px;
+            background: #d2d2d2;
+            border: 15px solid #bebebe;
+            border-bottom-width: 40px;
+            border-radius: 10px;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.5), inset 0 0 10px rgba(0,0,0,0.2);
+            position: relative;
+            cursor: pointer;
+            transition: all 1s ease-in-out;
+        }
+
+        /* 显示器底座 */
+        #monitor::after {
+            content: ""; position: absolute; bottom: -80px; left: 25%;
+            width: 50%; height: 40px; background: #aaa;
+            clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%);
+        }
+
+        /* 屏幕内部（系统层） */
+        #screen {
+            width: 100%; height: 100%;
+            background: #000;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 0 20px #000;
+        }
+
+        /* 第三层：Windows 桌面 */
+        #windows-desktop {
+            width: 100%; height: 100%;
+            background: var(--win-blue);
+            display: none; /* 初始黑屏 */
+            flex-direction: column;
+        }
+
+        /* 桌面图标 */
+        .desktop-icons {
+            padding: 20px; display: grid;
+            grid-template-columns: repeat(auto-fill, 70px); grid-gap: 20px;
+        }
         .icon {
-            width: 80px; height: 90px; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; color: #fff;
-            text-shadow: 2px 2px #000; margin-bottom: 20px;
+            display: flex; flex-direction: column; align-items: center;
+            color: white; font-size: 10px; text-align: center;
         }
-        .icon img { width: 50px; filter: drop-shadow(2px 2px var(--neon-pink)); }
-        .icon span { font-size: 10px; font-weight: bold; margin-top: 5px; background: rgba(0,0,0,0.5); }
+        .icon img { width: 32px; margin-bottom: 5px; }
 
-        /* --- 真实的 Windows 窗口 --- */
+        /* 真实的 3D 窗口 */
         .window {
-            position: absolute; width: 350px; background: var(--win-gray);
+            position: absolute; width: 280px; background: var(--win-gray);
             border: 2px solid; border-color: #fff #808080 #808080 #fff;
-            box-shadow: 5px 5px 0 rgba(0,0,0,0.5); display: flex; flex-direction: column;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+            display: none; flex-direction: column; z-index: 100;
         }
         .title-bar {
-            background: linear-gradient(90deg, #800080, var(--neon-pink));
-            color: white; padding: 4px 8px; display: flex; 
-            justify-content: space-between; align-items: center; cursor: grab;
+            background: #000080; color: white; padding: 3px 6px;
+            display: flex; justify-content: space-between; font-size: 11px;
+            cursor: move;
         }
-        .title-controls button {
-            width: 18px; height: 18px; font-size: 10px; background: var(--win-gray);
-            border: 1px solid #000; cursor: pointer; margin-left: 2px;
-        }
-        .window-content {
-            margin: 2px; background: #fff; border: 2px solid;
-            border-color: #808080 #fff #fff #808080; padding: 15px;
-            height: 200px; overflow-y: auto; color: #000;
+        .window-body {
+            background: white; margin: 2px; padding: 10px;
+            border: 2px solid; border-color: #808080 #fff #fff #808080;
+            height: 150px; font-size: 12px; color: black;
         }
 
-        /* --- 任务栏 --- */
+        /* 任务栏 */
         #taskbar {
-            position: fixed; bottom: 0; left: 0; right: 0; height: 40px;
-            background: var(--taskbar-glass); backdrop-filter: blur(10px);
-            border-top: 2px solid var(--neon-blue); display: flex; align-items: center; padding: 0 10px;
+            margin-top: auto; height: 30px; background: var(--win-gray);
+            border-top: 2px solid #fff; display: flex; align-items: center; padding: 2px;
         }
         .start-btn {
-            background: var(--neon-pink); color: #fff; border: none;
-            padding: 5px 15px; font-weight: bold; font-style: italic;
+            border: 2px solid; border-color: #fff #808080 #808080 #fff;
+            padding: 2px 8px; font-weight: bold; font-size: 11px;
         }
+
+        /* 放大进入系统的动画 */
+        .zoom-in { transform: scale(3); }
+        .monitor-full { width: 100vw !important; height: 100vh !important; border: 0 !important; border-radius: 0 !important; }
+
     </style>
 </head>
 <body>
 
-    <div id="boot-screen">
-        <div id="bios-text"></div>
-        <div id="load-bar-container"><div id="load-bar"></div></div>
-    </div>
+    <div id="room">
+        <div id="monitor" onclick="bootSystem()">
+            <div id="screen">
+                <div id="boot-text" style="color: #0f0; padding: 20px; font-size: 12px; display: none;">
+                    Verifying DMI Pool Data ...........<br>
+                    Boot from CD :<br>
+                    Starting Windows 98...
+                </div>
+                
+                <div id="windows-desktop">
+                    <div class="desktop-icons">
+                        <div class="icon" onclick="openWindow('My Documents', 'Welcome to Lydia\'s archive.')">
+                            <img src="https://win98icons.alexmeub.com/icons/png/directory_open_file_mydocs-4.png">
+                            <span>My Documents</span>
+                        </div>
+                        <div class="icon" onclick="openWindow('System', 'All systems operational.')">
+                            <img src="https://win98icons.alexmeub.com/icons/png/computer_explorer-4.png">
+                            <span>My Computer</span>
+                        </div>
+                    </div>
 
-    <div id="desktop">
-        <div class="icon" onclick="createWindow(1)">
-            <img src="https://win98icons.alexmeub.com/icons/png/directory_open_file_mydocs-4.png">
-            <span>01_CREATION</span>
-        </div>
-        <div class="icon" onclick="createWindow(2)">
-            <img src="https://win98icons.alexmeub.com/icons/png/directory_closed-4.png">
-            <span>02_STRATEGY</span>
-        </div>
-        <div id="taskbar">
-            <button class="start-btn">VICE_OS</button>
-            <div id="clock" style="margin-left:auto; color:var(--neon-blue); font-weight:bold;"></div>
+                    <div id="app-window" class="window">
+                        <div class="title-bar">
+                            <span id="win-title">Folder</span>
+                            <button onclick="closeWindow()" style="height:14px; width:16px; font-size:9px;">X</button>
+                        </div>
+                        <div class="window-body" id="win-content"></div>
+                    </div>
+
+                    <div id="taskbar">
+                        <div class="start-btn">Start</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        const biosLines = ["Initializing VICE_OS...", "Video: RAGE Engine v1.0", "Loading assets...", "Ready."];
-        let line = 0;
-        const biosEl = document.getElementById('bios-text');
+        function bootSystem() {
+            const monitor = document.getElementById('monitor');
+            const bootText = document.getElementById('boot-text');
+            const desktop = document.getElementById('windows-desktop');
 
-        // 1. 模拟开机
-        function runBios() {
-            if (line < biosLines.length) {
-                biosEl.innerHTML += "> " + biosLines[line] + "<br>";
-                line++;
-                setTimeout(runBios, 500);
-            } else {
-                document.getElementById('load-bar-container').style.display = 'block';
-                fillBar();
-            }
-        }
-        runBios();
+            // 1. 视角拉近动画
+            monitor.onclick = null; // 防止重复点击
+            monitor.classList.add('monitor-full');
+            document.getElementById('room').style.transform = "scale(1.2)";
 
-        function fillBar() {
-            let w = 0;
-            const bar = document.getElementById('load-bar');
-            const int = setInterval(() => {
-                w += 2; bar.style.width = w + "%";
-                if(w >= 100) {
-                    clearInterval(int);
-                    document.getElementById('boot-screen').style.display = 'none';
-                    document.getElementById('desktop').style.display = 'block';
-                }
-            }, 30);
+            // 2. 模拟开机自检
+            setTimeout(() => {
+                bootText.style.display = 'block';
+            }, 500);
+
+            // 3. 进入系统
+            setTimeout(() => {
+                bootText.style.display = 'none';
+                desktop.style.display = 'flex';
+            }, 2500);
         }
 
-        // 2. 窗口管理系统
-        let topZ = 100;
-        const data = {
-            1: { title: "CREATION", content: "Experimental designs and archival logic." },
-            2: { title: "STRATEGY", content: "Engineering narratives for the digital era." }
-        };
-
-        function createWindow(id) {
-            const winData = data[id];
-            const win = document.createElement('div');
-            win.className = 'window';
-            win.style.left = (50 + id * 30) + 'px';
-            win.style.top = (50 + id * 30) + 'px';
-            win.style.zIndex = ++topZ;
-
-            win.innerHTML = `
-                <div class="title-bar">
-                    <span>${winData.title}</span>
-                    <div class="title-controls">
-                        <button onclick="this.closest('.window').remove()">X</button>
-                    </div>
-                </div>
-                <div class="window-content">${winData.content}</div>
-            `;
-
-            document.getElementById('desktop').appendChild(win);
-            makeDraggable(win);
+        function openWindow(title, content) {
+            const win = document.getElementById('app-window');
+            document.getElementById('win-title').innerText = title;
+            document.getElementById('win-content').innerText = content;
+            win.style.display = 'flex';
+            win.style.top = "50px";
+            win.style.left = "50px";
         }
 
-        // 3. 真实拖拽逻辑
-        function makeDraggable(win) {
-            const bar = win.querySelector('.title-bar');
-            bar.onmousedown = (e) => {
-                win.style.zIndex = ++topZ;
-                let shiftX = e.clientX - win.getBoundingClientRect().left;
-                let shiftY = e.clientY - win.getBoundingClientRect().top;
-
-                document.onmousemove = (e) => {
-                    win.style.left = e.clientX - shiftX + 'px';
-                    win.style.top = e.clientY - shiftY + 'px';
-                };
-                document.onmouseup = () => { document.onmousemove = null; };
-            };
+        function closeWindow() {
+            document.getElementById('app-window').style.display = 'none';
         }
-
-        // 4. 时钟
-        setInterval(() => {
-            document.getElementById('clock').innerText = new Date().toLocaleTimeString();
-        }, 1000);
     </script>
 </body>
 </html>
