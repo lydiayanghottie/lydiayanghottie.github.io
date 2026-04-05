@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>LYDIA_OS // VINTAGE_DESKTOP</title>
+    <title>IBM_5150 // ARCHIVE_1998</title>
     <style>
         :root {
             --win-blue: #008080;
@@ -11,174 +11,137 @@
 
         body, html { 
             margin: 0; padding: 0; width: 100%; height: 100%; 
-            overflow: hidden; background: #1a1a1a; 
+            overflow: hidden; background: #000; 
             font-family: 'Tahoma', sans-serif;
         }
 
-        /* 第一层：环境（书桌背景） */
-        #room {
+        /* 环境层：放置那张复古电脑图片 */
+        #setup-wrapper {
             width: 100vw; height: 100vh;
-            background: url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=2000') no-repeat center center;
-            background-size: cover;
             display: flex; align-items: center; justify-content: center;
-            transition: transform 1.5s ease-in-out;
+            background: #111; /* 背景色 */
+            transition: transform 1.5s cubic-bezier(0.7, 0, 0.3, 1);
         }
 
-        /* 第二层：显示器外壳 */
-        #monitor {
-            width: 600px; height: 450px;
-            background: #d2d2d2;
-            border: 15px solid #bebebe;
-            border-bottom-width: 40px;
-            border-radius: 10px;
-            box-shadow: 0 50px 100px rgba(0,0,0,0.5), inset 0 0 10px rgba(0,0,0,0.2);
+        /* 模拟图片中的电脑显示器部分 */
+        #monitor-case {
+            width: 650px; height: 500px;
+            background: url('https://images.unsplash.com/photo-1591405351990-4726e331f141?q=80&w=2000') no-repeat center; /* 建议换成你上传的那张图 */
+            background-size: contain;
             position: relative;
-            cursor: pointer;
-            transition: all 1s ease-in-out;
+            display: flex; align-items: center; justify-content: center;
         }
 
-        /* 显示器底座 */
-        #monitor::after {
-            content: ""; position: absolute; bottom: -80px; left: 25%;
-            width: 50%; height: 40px; background: #aaa;
-            clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%);
-        }
-
-        /* 屏幕内部（系统层） */
-        #screen {
-            width: 100%; height: 100%;
+        /* 关键：点击感应区（正好覆盖图片里的屏幕位置） */
+        #screen-trigger {
+            width: 320px; height: 240px;
             background: #000;
+            border-radius: 5px;
+            cursor: pointer;
             overflow: hidden;
             position: relative;
-            box-shadow: inset 0 0 20px #000;
+            top: -20px; /* 根据图片位置微调 */
+            box-shadow: inset 0 0 40px #000;
         }
 
-        /* 第三层：Windows 桌面 */
-        #windows-desktop {
+        /* 内部 Windows 系统桌面 */
+        #os-desktop {
             width: 100%; height: 100%;
             background: var(--win-blue);
-            display: none; /* 初始黑屏 */
+            display: none; /* 初始关闭 */
             flex-direction: column;
+            position: relative;
         }
 
-        /* 桌面图标 */
-        .desktop-icons {
-            padding: 20px; display: grid;
-            grid-template-columns: repeat(auto-fill, 70px); grid-gap: 20px;
-        }
-        .icon {
-            display: flex; flex-direction: column; align-items: center;
-            color: white; font-size: 10px; text-align: center;
-        }
-        .icon img { width: 32px; margin-bottom: 5px; }
-
-        /* 真实的 3D 窗口 */
+        /* --- 窗口样式 --- */
         .window {
-            position: absolute; width: 280px; background: var(--win-gray);
+            position: absolute; width: 200px; background: var(--win-gray);
             border: 2px solid; border-color: #fff #808080 #808080 #fff;
-            box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.5);
             display: none; flex-direction: column; z-index: 100;
         }
         .title-bar {
-            background: #000080; color: white; padding: 3px 6px;
-            display: flex; justify-content: space-between; font-size: 11px;
-            cursor: move;
+            background: #000080; color: white; padding: 2px 5px;
+            display: flex; justify-content: space-between; font-size: 10px;
         }
         .window-body {
             background: white; margin: 2px; padding: 10px;
             border: 2px solid; border-color: #808080 #fff #fff #808080;
-            height: 150px; font-size: 12px; color: black;
+            font-size: 11px; color: black; min-height: 80px;
         }
+
+        /* 桌面图标 */
+        .icon-grid { padding: 10px; display: grid; grid-gap: 15px; }
+        .icon { display: flex; flex-direction: column; align-items: center; color: #fff; font-size: 9px; cursor: pointer; }
+        .icon img { width: 24px; margin-bottom: 2px; }
 
         /* 任务栏 */
-        #taskbar {
-            margin-top: auto; height: 30px; background: var(--win-gray);
-            border-top: 2px solid #fff; display: flex; align-items: center; padding: 2px;
-        }
-        .start-btn {
-            border: 2px solid; border-color: #fff #808080 #808080 #fff;
-            padding: 2px 8px; font-weight: bold; font-size: 11px;
-        }
+        #taskbar { margin-top: auto; height: 25px; background: var(--win-gray); border-top: 2px solid #fff; display: flex; align-items: center; padding: 2px; }
+        .start-btn { border: 2px solid; border-color: #fff #808080 #808080 #fff; padding: 0 5px; font-weight: bold; font-size: 10px; }
 
-        /* 放大进入系统的动画 */
-        .zoom-in { transform: scale(3); }
-        .monitor-full { width: 100vw !important; height: 100vh !important; border: 0 !important; border-radius: 0 !important; }
+        /* --- 放大动画 --- */
+        .zoomed { transform: scale(3.5); } /* 这里的倍数决定了拉近的深度 */
 
     </style>
 </head>
 <body>
 
-    <div id="room">
-        <div id="monitor" onclick="bootSystem()">
-            <div id="screen">
-                <div id="boot-text" style="color: #0f0; padding: 20px; font-size: 12px; display: none;">
-                    Verifying DMI Pool Data ...........<br>
-                    Boot from CD :<br>
-                    Starting Windows 98...
+    <div id="setup-wrapper">
+        <div id="monitor-case">
+            <div id="screen-trigger" onclick="bootUp()">
+                <div id="boot-log" style="color: #0f0; padding: 10px; font-size: 10px; display: none;">
+                    RAM TEST: 640K OK<br>
+                    BIOS V.1.02...<br>
+                    BOOTING OS...
                 </div>
-                
-                <div id="windows-desktop">
-                    <div class="desktop-icons">
-                        <div class="icon" onclick="openWindow('My Documents', 'Welcome to Lydia\'s archive.')">
-                            <img src="https://win98icons.alexmeub.com/icons/png/directory_open_file_mydocs-4.png">
-                            <span>My Documents</span>
-                        </div>
-                        <div class="icon" onclick="openWindow('System', 'All systems operational.')">
-                            <img src="https://win98icons.alexmeub.com/icons/png/computer_explorer-4.png">
-                            <span>My Computer</span>
+
+                <div id="os-desktop">
+                    <div class="icon-grid">
+                        <div class="icon" onclick="openWin('Folder', 'Archival data loaded.')">
+                            <img src="https://win98icons.alexmeub.com/icons/png/directory_closed-4.png">
+                            <span>PROJECTS</span>
                         </div>
                     </div>
 
-                    <div id="app-window" class="window">
+                    <div id="popup" class="window">
                         <div class="title-bar">
-                            <span id="win-title">Folder</span>
-                            <button onclick="closeWindow()" style="height:14px; width:16px; font-size:9px;">X</button>
+                            <span id="win-t">Title</span>
+                            <button onclick="document.getElementById('popup').style.display='none'">X</button>
                         </div>
-                        <div class="window-body" id="win-content"></div>
+                        <div class="window-body" id="win-c"></div>
                     </div>
 
-                    <div id="taskbar">
-                        <div class="start-btn">Start</div>
-                    </div>
+                    <div id="taskbar"><div class="start-btn">Start</div></div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        function bootSystem() {
-            const monitor = document.getElementById('monitor');
-            const bootText = document.getElementById('boot-text');
-            const desktop = document.getElementById('windows-desktop');
+        function bootUp() {
+            const wrapper = document.getElementById('setup-wrapper');
+            const bootLog = document.getElementById('boot-log');
+            const desktop = document.getElementById('os-desktop');
 
-            // 1. 视角拉近动画
-            monitor.onclick = null; // 防止重复点击
-            monitor.classList.add('monitor-full');
-            document.getElementById('room').style.transform = "scale(1.2)";
+            // 1. 镜头拉近动画
+            wrapper.classList.add('zoomed');
+            
+            // 2. 模拟黑屏后的 BIOS 文字
+            setTimeout(() => { bootLog.style.display = 'block'; }, 800);
 
-            // 2. 模拟开机自检
+            // 3. 进入 Windows 桌面
             setTimeout(() => {
-                bootText.style.display = 'block';
-            }, 500);
-
-            // 3. 进入系统
-            setTimeout(() => {
-                bootText.style.display = 'none';
+                bootLog.style.display = 'none';
                 desktop.style.display = 'flex';
             }, 2500);
         }
 
-        function openWindow(title, content) {
-            const win = document.getElementById('app-window');
-            document.getElementById('win-title').innerText = title;
-            document.getElementById('win-content').innerText = content;
-            win.style.display = 'flex';
-            win.style.top = "50px";
-            win.style.left = "50px";
-        }
-
-        function closeWindow() {
-            document.getElementById('app-window').style.display = 'none';
+        function openWin(t, c) {
+            const p = document.getElementById('popup');
+            document.getElementById('win-t').innerText = t;
+            document.getElementById('win-c').innerText = c;
+            p.style.display = 'flex';
+            p.style.top = '20px'; p.style.left = '20px';
         }
     </script>
 </body>
