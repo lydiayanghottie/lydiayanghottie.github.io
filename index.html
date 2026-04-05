@@ -3,216 +3,189 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LYDIA_YANG // ARCHIVE_1998</title>
+    <title>VICE_OS // ARCHIVE_1998</title>
     <style>
         :root {
-            --bg-color: #008080; /* 经典 Win98 桌面色 */
-            --taskbar-bg: rgba(192, 192, 192, 0.8);
-            --window-bg: rgba(255, 255, 255, 0.85);
-            --accent: #000080; /* 标题栏深蓝色 */
-            --crt-opacity: 0.15;
+            --neon-pink: #ff00ff;
+            --neon-blue: #00ffff;
+            --win-gray: #c0c0c0;
+            --taskbar-glass: rgba(0, 0, 0, 0.6);
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; cursor: crosshair; }
-        
-        body, html { 
-            margin: 0; padding: 0; width: 100%; height: 100%; 
-            font-family: 'Courier New', Courier, monospace;
-            background-color: #000; overflow: hidden;
-        }
+        * { box-sizing: border-box; cursor: crosshair; font-family: 'Courier New', monospace; }
 
-        /* --- CRT 扫描线滤镜 (Vice City 风格) --- */
+        body, html { margin: 0; padding: 0; height: 100vh; background: #000; overflow: hidden; }
+
+        /* --- GTA 风格 CRT 滤镜 --- */
         body::after {
-            content: " "; display: block; position: fixed; inset: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
-            z-index: 10000; background-size: 100% 3px, 3px 100%; pointer-events: none;
+            content: ""; position: fixed; inset: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+            background-size: 100% 4px; z-index: 10000; pointer-events: none;
         }
 
-        /* --- BIOS 启动界面 --- */
-        #bios-screen {
-            position: fixed; inset: 0; background: #000; color: #00ff00;
-            padding: 20px; z-index: 9999; font-size: 14px; line-height: 1.5;
+        /* --- BIOS & 加载条 --- */
+        #boot-screen {
+            position: fixed; inset: 0; background: #000; color: var(--neon-blue);
+            padding: 40px; z-index: 9999; display: flex; flex-direction: column;
         }
-        .blink { animation: blink 0.8s infinite; }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        #load-bar-container {
+            width: 300px; height: 20px; border: 2px solid var(--neon-pink);
+            margin-top: 20px; display: none; position: relative;
+        }
+        #load-bar { height: 100%; background: var(--neon-pink); width: 0%; transition: 0.1s; }
 
-        /* --- 桌面布局 --- */
+        /* --- 桌面 (GTA 背景) --- */
         #desktop {
             position: relative; width: 100vw; height: 100vh;
-            background-color: var(--bg-color);
-            display: none; /* 初始隐藏，等 BIOS 结束显示 */
-            padding: 20px;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, 80px);
-            grid-template-rows: repeat(auto-fill, 100px);
-            grid-gap: 20px;
-            align-content: start;
+            background: linear-gradient(45deg, #2b0054 0%, #ff00ff55 100%), url('https://web.archive.org/web/20021004052145im_/https://www.rockstargames.com/vicecity/screenshots/screenshot1.jpg');
+            background-size: cover; background-position: center;
+            display: none; padding: 20px;
         }
 
         /* 文件夹图标 */
-        .folder {
-            display: flex; flex-direction: column; align-items: center;
-            color: white; text-align: center; text-shadow: 1px 1px #000;
-            transition: 0.2s;
+        .icon {
+            width: 80px; height: 90px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; color: #fff;
+            text-shadow: 2px 2px #000; margin-bottom: 20px;
         }
-        .folder:active { transform: scale(0.9); }
-        .folder-icon { 
-            font-size: 40px; margin-bottom: 5px; 
-            filter: drop-shadow(2px 2px 0px #000);
-        }
-        .folder-name { font-size: 10px; font-weight: bold; background: rgba(0,0,0,0.3); padding: 2px 4px; }
+        .icon img { width: 50px; filter: drop-shadow(2px 2px var(--neon-pink)); }
+        .icon span { font-size: 10px; font-weight: bold; margin-top: 5px; background: rgba(0,0,0,0.5); }
 
-        /* --- 任务栏 (ryOS 风格) --- */
+        /* --- 真实的 Windows 窗口 --- */
+        .window {
+            position: absolute; width: 350px; background: var(--win-gray);
+            border: 2px solid; border-color: #fff #808080 #808080 #fff;
+            box-shadow: 5px 5px 0 rgba(0,0,0,0.5); display: flex; flex-direction: column;
+        }
+        .title-bar {
+            background: linear-gradient(90deg, #800080, var(--neon-pink));
+            color: white; padding: 4px 8px; display: flex; 
+            justify-content: space-between; align-items: center; cursor: grab;
+        }
+        .title-controls button {
+            width: 18px; height: 18px; font-size: 10px; background: var(--win-gray);
+            border: 1px solid #000; cursor: pointer; margin-left: 2px;
+        }
+        .window-content {
+            margin: 2px; background: #fff; border: 2px solid;
+            border-color: #808080 #fff #fff #808080; padding: 15px;
+            height: 200px; overflow-y: auto; color: #000;
+        }
+
+        /* --- 任务栏 --- */
         #taskbar {
-            position: fixed; bottom: 0; left: 0; right: 0; height: 35px;
-            background: var(--taskbar-bg); backdrop-filter: blur(10px);
-            border-top: 2px solid #fff; display: flex; align-items: center;
-            padding: 0 10px; z-index: 5000;
+            position: fixed; bottom: 0; left: 0; right: 0; height: 40px;
+            background: var(--taskbar-glass); backdrop-filter: blur(10px);
+            border-top: 2px solid var(--neon-blue); display: flex; align-items: center; padding: 0 10px;
         }
         .start-btn {
-            background: #c0c0c0; border: 2px solid;
-            border-color: #fff #808080 #808080 #fff;
-            padding: 2px 10px; font-weight: bold; font-size: 12px;
-            display: flex; align-items: center; gap: 5px;
+            background: var(--neon-pink); color: #fff; border: none;
+            padding: 5px 15px; font-weight: bold; font-style: italic;
         }
-        .clock { margin-left: auto; font-size: 12px; font-weight: bold; }
-
-        /* --- 弹出窗口 (毛玻璃效果) --- */
-        #window-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.3);
-            display: none; align-items: center; justify-content: center; z-index: 6000;
-        }
-        .window {
-            width: 90%; max-width: 500px; background: var(--window-bg);
-            backdrop-filter: blur(15px); border: 2px solid #fff;
-            box-shadow: 10px 10px 0px rgba(0,0,0,0.2);
-            animation: windowOpen 0.3s cubic-bezier(0.17, 0.67, 0.83, 0.67);
-        }
-        @keyframes windowOpen { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        
-        .title-bar {
-            background: var(--accent); color: white; padding: 4px 8px;
-            display: flex; justify-content: space-between; align-items: center;
-            font-size: 12px; font-weight: bold;
-        }
-        .close-btn { background: #c0c0c0; border: 1px solid #000; color: #000; padding: 0 5px; }
-        .window-body { padding: 25px; color: #000; line-height: 1.6; }
-        .window-body h2 { margin-top: 0; letter-spacing: -1px; }
-
     </style>
 </head>
 <body>
 
-    <div id="bios-screen">
-        <div id="log"></div>
-        <div id="boot-status" style="margin-top:20px; color:#fff;" class="blink"></div>
+    <div id="boot-screen">
+        <div id="bios-text"></div>
+        <div id="load-bar-container"><div id="load-bar"></div></div>
     </div>
 
     <div id="desktop">
-        <div class="folder" onclick="openFolder(1)">
-            <div class="folder-icon">📁</div>
-            <div class="folder-name">01_CREATION</div>
+        <div class="icon" onclick="createWindow(1)">
+            <img src="https://win98icons.alexmeub.com/icons/png/directory_open_file_mydocs-4.png">
+            <span>01_CREATION</span>
         </div>
-        <div class="folder" onclick="openFolder(2)">
-            <div class="folder-icon">📁</div>
-            <div class="folder-name">02_STRATEGY</div>
+        <div class="icon" onclick="createWindow(2)">
+            <img src="https://win98icons.alexmeub.com/icons/png/directory_closed-4.png">
+            <span>02_STRATEGY</span>
         </div>
-        <div class="folder" onclick="openFolder(3)">
-            <div class="folder-icon">📁</div>
-            <div class="folder-name">03_DISTRO</div>
+        <div id="taskbar">
+            <button class="start-btn">VICE_OS</button>
+            <div id="clock" style="margin-left:auto; color:var(--neon-blue); font-weight:bold;"></div>
         </div>
-        <div class="folder" onclick="openFolder(4)">
-            <div class="folder-icon">📁</div>
-            <div class="folder-name">04_SCRAPBOOK</div>
-        </div>
-        <div class="folder" onclick="openFolder(5)">
-            <div class="folder-icon">📁</div>
-            <div class="folder-name">05_PROFILE</div>
-        </div>
-    </div>
-
-    <div id="window-overlay">
-        <div class="window">
-            <div class="title-bar">
-                <span id="wt-title">FOLDER_VIEWER</span>
-                <button class="close-btn" onclick="closeFolder()">X</button>
-            </div>
-            <div class="window-body">
-                <small id="wt-idx" style="opacity:0.5"></small>
-                <h2 id="wt-header">TITLE</h2>
-                <p id="wt-desc">Description goes here...</p>
-            </div>
-        </div>
-    </div>
-
-    <div id="taskbar">
-        <div class="start-btn">🏁 Start</div>
-        <div style="margin-left:15px; font-size:10px; opacity:0.6;">SYSTEM_1998_ACTIVE</div>
-        <div class="clock" id="clock">00:00</div>
     </div>
 
     <script>
-        // --- 1. BIOS 启动逻辑 ---
-        const logs = [
-            "HHBIOS(C)2000 Heffernan Henry Inc.",
-            "Checking RAM: 14000 OK",
-            "Initializing ryOS Kernel...",
-            "Loading /sounds/AlertBonk.mp3...",
-            "Loading /assets/index-V1998.js...",
-            "Mounting /dev/archives/lydia_yang...",
-            "SYSTEM_READY_FOR_BOOT"
-        ];
-        
-        let logIdx = 0;
-        const logEl = document.getElementById('log');
-        
-        function printLog() {
-            if(logIdx < logs.length) {
-                logEl.innerHTML += "> " + logs[logIdx] + "<br>";
-                logIdx++;
-                setTimeout(printLog, 200 + Math.random() * 300);
+        const biosLines = ["Initializing VICE_OS...", "Video: RAGE Engine v1.0", "Loading assets...", "Ready."];
+        let line = 0;
+        const biosEl = document.getElementById('bios-text');
+
+        // 1. 模拟开机
+        function runBios() {
+            if (line < biosLines.length) {
+                biosEl.innerHTML += "> " + biosLines[line] + "<br>";
+                line++;
+                setTimeout(runBios, 500);
             } else {
-                document.getElementById('boot-status').innerText = "CLICK TO INITIALIZE SYSTEM";
-                window.onclick = bootSystem;
+                document.getElementById('load-bar-container').style.display = 'block';
+                fillBar();
             }
         }
-        printLog();
+        runBios();
 
-        function bootSystem() {
-            document.getElementById('bios-screen').style.display = 'none';
-            document.getElementById('desktop').style.display = 'grid';
-            window.onclick = null;
+        function fillBar() {
+            let w = 0;
+            const bar = document.getElementById('load-bar');
+            const int = setInterval(() => {
+                w += 2; bar.style.width = w + "%";
+                if(w >= 100) {
+                    clearInterval(int);
+                    document.getElementById('boot-screen').style.display = 'none';
+                    document.getElementById('desktop').style.display = 'block';
+                }
+            }, 30);
         }
 
-        // --- 2. 文件夹数据 ---
-        const archiveData = {
-            1: { idx: "ARCHIVE/01", h: "CONTENT CREATION", d: "Experimental archival aesthetics. Merging industrial precision with digital fluidity." },
-            2: { idx: "ARCHIVE/02", h: "STRATEGIC LOGIC", d: "Engineering narratives that stick. Bridging technical rigor and human intuition." },
-            3: { idx: "ARCHIVE/03", h: "GLOBAL DISTRO", d: "Calibrating signals in a hyper-connected era. Strategic signal optimization." },
-            4: { idx: "ARCHIVE/04", h: "THE SCRAPBOOK", d: "Raw insights and tactical prototypes. The unfiltered engine room." },
-            5: { idx: "ARCHIVE/05", h: "IDENTITY PROFILE", d: "Lydia Yang. Content Strategist. Based in the intersection of logic and creative vision." }
+        // 2. 窗口管理系统
+        let topZ = 100;
+        const data = {
+            1: { title: "CREATION", content: "Experimental designs and archival logic." },
+            2: { title: "STRATEGY", content: "Engineering narratives for the digital era." }
         };
 
-        // --- 3. 交互逻辑 ---
-        function openFolder(id) {
-            const data = archiveData[id];
-            document.getElementById('wt-idx').innerText = data.idx;
-            document.getElementById('wt-header').innerText = data.h;
-            document.getElementById('wt-desc').innerText = data.d;
-            document.getElementById('window-overlay').style.display = 'flex';
+        function createWindow(id) {
+            const winData = data[id];
+            const win = document.createElement('div');
+            win.className = 'window';
+            win.style.left = (50 + id * 30) + 'px';
+            win.style.top = (50 + id * 30) + 'px';
+            win.style.zIndex = ++topZ;
+
+            win.innerHTML = `
+                <div class="title-bar">
+                    <span>${winData.title}</span>
+                    <div class="title-controls">
+                        <button onclick="this.closest('.window').remove()">X</button>
+                    </div>
+                </div>
+                <div class="window-content">${winData.content}</div>
+            `;
+
+            document.getElementById('desktop').appendChild(win);
+            makeDraggable(win);
         }
 
-        function closeFolder() {
-            document.getElementById('window-overlay').style.display = 'none';
+        // 3. 真实拖拽逻辑
+        function makeDraggable(win) {
+            const bar = win.querySelector('.title-bar');
+            bar.onmousedown = (e) => {
+                win.style.zIndex = ++topZ;
+                let shiftX = e.clientX - win.getBoundingClientRect().left;
+                let shiftY = e.clientY - win.getBoundingClientRect().top;
+
+                document.onmousemove = (e) => {
+                    win.style.left = e.clientX - shiftX + 'px';
+                    win.style.top = e.clientY - shiftY + 'px';
+                };
+                document.onmouseup = () => { document.onmousemove = null; };
+            };
         }
 
-        // 时钟
+        // 4. 时钟
         setInterval(() => {
-            const n = new Date();
-            document.getElementById('clock').innerText = n.getHours() + ":" + String(n.getMinutes()).padStart(2, '0');
+            document.getElementById('clock').innerText = new Date().toLocaleTimeString();
         }, 1000);
-
     </script>
 </body>
 </html>
